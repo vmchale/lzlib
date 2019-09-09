@@ -1,4 +1,4 @@
-module Codec.Lzip ( LZErrno (..) 
+module Codec.Lzip ( LZErrno (..)
                   ) where
 
 #include <lzlib.h>
