@@ -33,7 +33,7 @@ library
     if impl(ghc >=8.0)
         ghc-options:
             -Wincomplete-uni-patterns -Wincomplete-record-updates
-            -Wredundant-constraints -Widentities
+            -Wredundant-constraints
 
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
