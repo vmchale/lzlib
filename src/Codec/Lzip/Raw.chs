@@ -51,16 +51,18 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       , lZDecompressTotalOutSize
                       ) where
 
+import Control.Monad ((<=<))
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Ptr (Ptr)
+import System.IO.Unsafe (unsafePerformIO)
 
 #include <stdint.h>
 #include <lzlib.h>
 
 type UInt8 = {# type uint8_t #}
 
-{# enum LZ_Errno as LZErrno {underscoreToCase} #}
+{# enum LZ_Errno as LZErrno {underscoreToCase} deriving (Eq) #}
 
 {# fun LZ_version as ^ {} -> `CString' #}
 {# fun LZ_strerror as ^ { `LZErrno' } -> `CString' #}
@@ -70,6 +72,9 @@ type UInt8 = {# type uint8_t #}
 {# fun LZ_max_dictionary_size as ^ {} -> `CInt' #}
 {# fun LZ_min_match_len_limit as ^ {} -> `CInt' #}
 {# fun LZ_max_match_len_limit as ^ {} -> `CInt' #}
+
+instance Show LZErrno where
+    show = unsafePerformIO . (peekCString <=< lZStrerror)
 
 -- | Abstract data type
 data LZEncoder
