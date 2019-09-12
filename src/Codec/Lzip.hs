@@ -1,6 +1,8 @@
 module Codec.Lzip ( compress
                   -- , decompress
                   , CompressionLevel (..)
+                  -- * Lower-level bindings
+                  , module Codec.Lzip.Raw
                   ) where
 
 import           Codec.Lzip.Raw
