@@ -1,53 +1,55 @@
-module Codec.Lzip ( -- * Prolegomena
-                    LZErrno (..)
-                  , lZVersion
-                  , lZStrerror
-                  , lZMinDictionaryBits
-                  , lZMinDictionarySize
-                  , lZMaxDictionaryBits
-                  , lZMaxDictionarySize
-                  , lZMinMatchLenLimit
-                  , lZMaxMatchLenLimit
-                  , UInt8
-                  -- * Compression functions
-                  , LZEncoder
-                  , LZEncoderPtr
-                  , lZCompressOpen
-                  , lZCompressClose
-                  , lZCompressFinish
-                  , lZCompressRestartMember
-                  , lZCompressSyncFlush
-                  , lZCompressRead
-                  , lZCompressWrite
-                  , lZCompressWriteSize
-                  , lZCompressErrno
-                  , lZCompressFinished
-                  , lZCompressMemberFinished
-                  , lZCompressDataPosition
-                  , lZCompressMemberPosition
-                  , lZCompressTotalInSize
-                  , lZCompressTotalOutSize
-                  -- * Decompression functions
-                  , LZDecoder
-                  , LZDecoderPtr
-                  , lZDecompressOpen
-                  , lZDecompressClose
-                  , lZDecompressFinish
-                  , lZDecompressReset
-                  , lZDecompressSyncToMember
-                  , lZDecompressRead
-                  , lZDecompressWrite
-                  , lZDecompressWriteSize
-                  , lZDecompressErrno
-                  , lZDecompressFinished
-                  , lZDecompressMemberFinished
-                  , lZDecompressDictionarySize
-                  , lZDecompressDataCrc
-                  , lZDecompressDataPosition
-                  , lZDecompressMemberPosition
-                  , lZDecompressTotalInSize
-                  , lZDecompressTotalOutSize
-                  ) where
+-- | Consult the lzlib [documentation](https://www.nongnu.org/lzip/manual/lzlib_manual.html)
+-- for more details
+module Codec.Lzip.Raw ( -- * Prolegomena
+                        LZErrno (..)
+                      , lZVersion
+                      , lZStrerror
+                      , lZMinDictionaryBits
+                      , lZMinDictionarySize
+                      , lZMaxDictionaryBits
+                      , lZMaxDictionarySize
+                      , lZMinMatchLenLimit
+                      , lZMaxMatchLenLimit
+                      , UInt8
+                      -- * Compression functions
+                      , LZEncoder
+                      , LZEncoderPtr
+                      , lZCompressOpen
+                      , lZCompressClose
+                      , lZCompressFinish
+                      , lZCompressRestartMember
+                      , lZCompressSyncFlush
+                      , lZCompressRead
+                      , lZCompressWrite
+                      , lZCompressWriteSize
+                      , lZCompressErrno
+                      , lZCompressFinished
+                      , lZCompressMemberFinished
+                      , lZCompressDataPosition
+                      , lZCompressMemberPosition
+                      , lZCompressTotalInSize
+                      , lZCompressTotalOutSize
+                      -- * Decompression functions
+                      , LZDecoder
+                      , LZDecoderPtr
+                      , lZDecompressOpen
+                      , lZDecompressClose
+                      , lZDecompressFinish
+                      , lZDecompressReset
+                      , lZDecompressSyncToMember
+                      , lZDecompressRead
+                      , lZDecompressWrite
+                      , lZDecompressWriteSize
+                      , lZDecompressErrno
+                      , lZDecompressFinished
+                      , lZDecompressMemberFinished
+                      , lZDecompressDictionarySize
+                      , lZDecompressDataCrc
+                      , lZDecompressDataPosition
+                      , lZDecompressMemberPosition
+                      , lZDecompressTotalInSize
+                      , lZDecompressTotalOutSize
+                      ) where
 
 import Foreign.C.String
 import Foreign.C.Types
