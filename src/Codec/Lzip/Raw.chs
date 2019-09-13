@@ -61,6 +61,8 @@ import System.IO.Unsafe (unsafePerformIO)
 #include <lzlib.h>
 
 type UInt8 = {# type uint8_t #}
+{#typedef uint8_t UInt8#}
+{#default in `Ptr UInt8' [uint8_t *] id#}
 
 {# enum LZ_Errno as LZErrno {underscoreToCase} deriving (Eq) #}
 
@@ -86,8 +88,8 @@ data LZEncoder
 {# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_restart_member as ^ { `LZEncoderPtr', id `CULLong' } -> `CInt' #}
 {# fun LZ_compress_sync_flush as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun LZ_compress_read as ^ { `LZEncoderPtr', id `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun LZ_compress_write as ^ { `LZEncoderPtr', id `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_compress_write_size as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_errno as ^ { `LZEncoderPtr' } -> `LZErrno' #}
 {# fun LZ_compress_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
@@ -107,8 +109,8 @@ data LZDecoder
 {# fun LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_reset as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_sync_to_member as ^ { `LZDecoderPtr' } -> `CInt' #}
-{# fun LZ_decompress_read as ^ { `LZDecoderPtr', id `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun LZ_decompress_write as ^ { `LZDecoderPtr', id `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_decompress_read as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_decompress_write as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_decompress_write_size as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_errno as ^ { `LZDecoderPtr' } -> `LZErrno' #}
 {# fun LZ_decompress_finished as ^ { `LZDecoderPtr' } -> `CInt' #}
