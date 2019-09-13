@@ -9,13 +9,13 @@ module Codec.Lzip ( compressStrict
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Monad         (unless, void, (<=<))
+import           Control.Monad         (unless, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
-import           Foreign.C.String
-import           Foreign.Marshal.Alloc (free, mallocBytes, reallocBytes)
+import           Data.Semigroup        ((<>))
+import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (castPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
 
@@ -77,38 +77,33 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
 compressStrict :: BS.ByteString -> BS.ByteString
 compressStrict = compressWithStrict Nine
 
+-- FIXME: memory?
 {-# NOINLINE compressWithStrict #-}
 compressWithStrict :: CompressionLevel -> BS.ByteString -> BS.ByteString
-compressWithStrict lvl bs = unsafePerformIO $ BS.useAsCStringLen bs $ BS.packCStringLen <=< compressBytes lvl
+compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
+
+    encoder <- lZCompressOpen (fromIntegral dictionarySize) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+
+    void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
+    void $ lZCompressFinish encoder
+
+    -- this is stupid but eh
+    newBytes <- mallocBytes sz
+    bytesActual <- lZCompressRead encoder newBytes (fromIntegral sz)
+
+    res <- lZCompressFinished encoder
+
+    unless (res == 1) $
+        error "Shouldn't happen"
+
+    void $ lZCompressClose encoder
+
+    BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual) <* free newBytes
 
     where
-        compressBytes :: CompressionLevel -> CStringLen -> IO CStringLen
-        compressBytes level (bytes, sz) = do
 
-            encoder <- lZCompressOpen (fromIntegral dictionarySize) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+        memberSize :: Int64
+        memberSize = maxBound
 
-            void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
-            void $ lZCompressFinish encoder
-
-            -- this is stupid but eh
-            newBytes <- mallocBytes sz
-            bytesActual <- lZCompressRead encoder newBytes (fromIntegral sz)
-
-            res <- lZCompressFinished encoder
-
-            unless (res == 1) $
-                error "Shouldn't happen"
-
-            compressedBytes <- reallocBytes newBytes (fromIntegral bytesActual)
-
-            void $ lZCompressClose encoder
-
-            pure (castPtr compressedBytes, fromIntegral bytesActual)
-
-            where
-
-                memberSize :: Int64
-                memberSize = maxBound
-
-                dictionarySize = _dictionarySize $ encoderOptions level
-                matchLenLimit = _matchLenLimit $ encoderOptions level
+        dictionarySize = _dictionarySize $ encoderOptions level
+        matchLenLimit = _matchLenLimit $ encoderOptions level
