@@ -7,11 +7,11 @@ module Codec.Lzip ( compressStrict
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Applicative
 import           Control.Monad         (unless, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import           Data.Int              (Int64)
+import           Data.Semigroup
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (castPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
@@ -52,7 +52,7 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
     void $ lZDecompressFinish decoder
 
-    readLoop decoder (4 * sz) BS.empty <* lZDecompressClose decoder
+    readLoop decoder (4 * sz) mempty <* lZDecompressClose decoder
 
     where
         readLoop :: LZDecoderPtr -> Int -> BS.ByteString -> IO BS.ByteString
@@ -66,8 +66,8 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
             bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
             free newBytes
             if res == 1
-                then pure $ acc `BS.append` bsActual
-                else readLoop decoder sz (acc `BS.append` bsActual)
+                then pure $ acc <> bsActual
+                else readLoop decoder sz (acc <> bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
