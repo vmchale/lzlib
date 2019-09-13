@@ -1,3 +1,4 @@
+.hspec-failures
 *.swp
 tags
 dist-newstyle
