@@ -55,6 +55,7 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     readLoop decoder (4 * sz) mempty <* lZDecompressClose decoder
 
     where
+        -- TODO: keep only one buffer per read
         readLoop :: LZDecoderPtr -> Int -> BS.ByteString -> IO BS.ByteString
         readLoop decoder sz acc = do
 
