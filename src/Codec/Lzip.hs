@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Codec.Lzip ( compressStrict
                   , compressWithStrict
                   , decompressStrict
@@ -13,7 +15,7 @@ import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
 import           Foreign.C.String
-import           Foreign.Marshal.Alloc (mallocBytes, reallocBytes)
+import           Foreign.Marshal.Alloc (free, mallocBytes, reallocBytes)
 import           Foreign.Ptr           (castPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
 
@@ -46,32 +48,30 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 
 {-# NOINLINE decompressStrict #-}
 decompressStrict :: BS.ByteString -> BS.ByteString
-decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ BS.packCStringLen <=< decompressBytes
+decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
+
+    decoder <- lZDecompressOpen
+
+    void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
+    void $ lZDecompressFinish decoder
+
+    readLoop decoder (4 * sz) "" <* lZDecompressClose decoder
 
     where
-        decompressBytes :: CStringLen -> IO CStringLen
-        decompressBytes (bytes, sz) = do
+        readLoop :: LZDecoderPtr -> Int -> BS.ByteString -> IO BS.ByteString
+        readLoop decoder sz acc = do
 
-            decoder <- lZDecompressOpen
-
-            void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
-            void $ lZDecompressFinish decoder
-
-            -- TODO: loop here instead
-            let newSz = sz * 4
-            newBytes <- mallocBytes newSz
-            bytesActual <- lZDecompressRead decoder newBytes (fromIntegral newSz)
+            newBytes <- mallocBytes sz
+            bytesActual <- lZDecompressRead decoder newBytes (fromIntegral sz)
 
             res <- lZDecompressFinished decoder
 
             unless (res == 1) $
                 error "yeet made a mistake here"
 
-            decompressedBytes <- reallocBytes newBytes (fromIntegral bytesActual)
-
-            void $ lZDecompressClose decoder
-
-            pure (castPtr decompressedBytes, fromIntegral bytesActual)
+            bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
+            free newBytes
+            pure $ acc <> bsActual
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
