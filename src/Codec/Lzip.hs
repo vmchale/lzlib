@@ -12,9 +12,7 @@ import           Codec.Lzip.Raw
 import           Control.Monad         (unless, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
-import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
-import           Data.Semigroup        ((<>))
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (castPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
@@ -69,8 +67,8 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
             bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
             free newBytes
             if res == 1
-                then pure $ acc <> bsActual
-                else readLoop decoder sz (acc <> bsActual)
+                then pure $ acc `BS.append` bsActual
+                else readLoop decoder sz (acc `BS.append` bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
