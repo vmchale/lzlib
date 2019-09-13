@@ -67,7 +67,7 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
             res <- lZDecompressFinished decoder
 
             unless (res == 1) $
-                error "yeet made a mistake here"
+                error "Shouldn't happen"
 
             bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
             free newBytes
