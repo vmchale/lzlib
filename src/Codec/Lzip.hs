@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Codec.Lzip ( compressStrict
                   , compressWithStrict
                   , decompressStrict
@@ -54,7 +52,7 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
     void $ lZDecompressFinish decoder
 
-    readLoop decoder (4 * sz) "" <* lZDecompressClose decoder
+    readLoop decoder (4 * sz) BS.empty <* lZDecompressClose decoder
 
     where
         readLoop :: LZDecoderPtr -> Int -> BS.ByteString -> IO BS.ByteString
