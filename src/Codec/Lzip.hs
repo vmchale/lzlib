@@ -1,17 +1,21 @@
-module Codec.Lzip ( compress
-                  -- , decompress
+module Codec.Lzip ( compressStrict
+                  , compressWithStrict
+                  , decompressStrict
                   , CompressionLevel (..)
                   -- * Lower-level bindings
                   , module Codec.Lzip.Raw
                   ) where
 
 import           Codec.Lzip.Raw
+import           Control.Monad         (unless, void, (<=<))
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
 import           Foreign.C.String
-import           Foreign.Marshal.Alloc (mallocBytes)
+import           Foreign.Marshal.Alloc (mallocBytes, reallocBytes)
+import           Foreign.Ptr           (castPtr)
+import           System.IO.Unsafe      (unsafePerformIO)
 
 data CompressionLevel = Zero
                       | One
@@ -40,27 +44,71 @@ encoderOptions Seven = LzOptions (1 `shiftL` 24) 68
 encoderOptions Eight = LzOptions (3 `shiftL` 23) 132
 encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 
-compress :: CStringLen -> IO CStringLen
-compress = compressWith Nine
-
-compressWith :: CompressionLevel -> CStringLen -> IO CStringLen
-compressWith level (bytes, sz) = do
-
-    encoder <- lZCompressOpen (fromIntegral dictionarySize) (fromIntegral matchLenLimit) (fromIntegral memberSize)
-
-    let newDataSize = deltaSize
-
-    newData <- mallocBytes newDataSize
-
-    pure undefined
+{-# NOINLINE decompressStrict #-}
+decompressStrict :: BS.ByteString -> BS.ByteString
+decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ BS.packCStringLen <=< decompressBytes
 
     where
+        decompressBytes :: CStringLen -> IO CStringLen
+        decompressBytes (bytes, sz) = do
 
-        memberSize :: Int64
-        memberSize = maxBound
+            decoder <- lZDecompressOpen
 
-        deltaSize :: Int
-        deltaSize = sz `div` 4 + 64
+            void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
+            void $ lZDecompressFinish decoder
 
-        dictionarySize = _dictionarySize $ encoderOptions level
-        matchLenLimit = _matchLenLimit $ encoderOptions level
+            -- TODO: loop here instead
+            let newSz = sz * 4
+            newBytes <- mallocBytes newSz
+            bytesActual <- lZDecompressRead decoder newBytes (fromIntegral newSz)
+
+            res <- lZDecompressFinished decoder
+
+            unless (res == 1) $
+                error "yeet made a mistake here"
+
+            decompressedBytes <- reallocBytes newBytes (fromIntegral bytesActual)
+
+            void $ lZDecompressClose decoder
+
+            pure (castPtr decompressedBytes, fromIntegral bytesActual)
+
+{-# NOINLINE compressStrict #-}
+compressStrict :: BS.ByteString -> BS.ByteString
+compressStrict = compressWithStrict Nine
+
+{-# NOINLINE compressWithStrict #-}
+compressWithStrict :: CompressionLevel -> BS.ByteString -> BS.ByteString
+compressWithStrict lvl bs = unsafePerformIO $ BS.useAsCStringLen bs $ BS.packCStringLen <=< compressBytes lvl
+
+    where
+        compressBytes :: CompressionLevel -> CStringLen -> IO CStringLen
+        compressBytes level (bytes, sz) = do
+
+            encoder <- lZCompressOpen (fromIntegral dictionarySize) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+
+            void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
+            void $ lZCompressFinish encoder
+
+            -- this is stupid but eh
+            newBytes <- mallocBytes sz
+            bytesActual <- lZCompressRead encoder newBytes (fromIntegral sz)
+
+            res <- lZCompressFinished encoder
+
+            unless (res == 1) $
+                error "Shouldn't happen"
+
+            compressedBytes <- reallocBytes newBytes (fromIntegral bytesActual)
+
+            void $ lZCompressClose encoder
+
+            pure (castPtr compressedBytes, fromIntegral bytesActual)
+
+            where
+
+                memberSize :: Int64
+                memberSize = maxBound
+
+                dictionarySize = _dictionarySize $ encoderOptions level
+                matchLenLimit = _matchLenLimit $ encoderOptions level
