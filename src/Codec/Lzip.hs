@@ -9,6 +9,7 @@ module Codec.Lzip ( compressStrict
                   ) where
 
 import           Codec.Lzip.Raw
+import           Control.Applicative
 import           Control.Monad         (unless, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
