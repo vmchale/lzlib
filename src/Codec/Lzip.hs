@@ -13,7 +13,7 @@ import qualified Data.ByteString       as BS
 import           Data.Int              (Int64)
 import           Data.Semigroup
 import           Foreign.Marshal.Alloc (free, mallocBytes)
-import           Foreign.Ptr           (castPtr)
+import           Foreign.Ptr           (Ptr, castPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
 
 data CompressionLevel = Zero
@@ -52,23 +52,28 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
     void $ lZDecompressFinish decoder
 
-    readLoop decoder (4 * sz) mempty <* lZDecompressClose decoder
+    let bufSz = 4 * sz
+    buf <- mallocBytes bufSz
+
+    (newBuf, res) <- readLoop decoder (buf, bufSz) mempty
+
+    void $ lZDecompressClose decoder
+    free newBuf
+
+    pure res
 
     where
-        -- TODO: keep only one buffer per read
-        readLoop :: LZDecoderPtr -> Int -> BS.ByteString -> IO BS.ByteString
-        readLoop decoder sz acc = do
+        readLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> BS.ByteString -> IO (Ptr UInt8, BS.ByteString)
+        readLoop decoder (newBytes, sz) acc = do
 
-            newBytes <- mallocBytes sz
             bytesActual <- lZDecompressRead decoder newBytes (fromIntegral sz)
 
             res <- lZDecompressFinished decoder
 
             bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
-            free newBytes
             if res == 1
-                then pure $ acc <> bsActual
-                else readLoop decoder sz (acc <> bsActual)
+                then pure $ (newBytes, acc <> bsActual)
+                else readLoop decoder (newBytes, sz) (acc <> bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
