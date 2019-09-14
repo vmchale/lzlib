@@ -72,14 +72,14 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
 
             bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
             if res == 1
-                then pure $ (newBytes, acc <> bsActual)
+                then pure (newBytes, acc <> bsActual)
                 else readLoop decoder (newBytes, sz) (acc <> bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
 compressStrict = compressWithStrict Nine
 
--- FIXME: memory?
+-- TODO: memory use
 {-# NOINLINE compressWithStrict #-}
 compressWithStrict :: CompressionLevel -> BS.ByteString -> BS.ByteString
 compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
@@ -96,7 +96,7 @@ compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes,
     res <- lZCompressFinished encoder
 
     unless (res == 1) $
-        error "Shouldn't happen (compressWithStrict)"
+        error "Shouldn't happen"
 
     void $ lZCompressClose encoder
 
