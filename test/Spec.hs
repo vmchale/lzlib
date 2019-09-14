@@ -6,6 +6,7 @@ import           Data.Foldable                (traverse_)
 import           System.FilePath              ((</>))
 import           System.FilePattern.Directory (getDirectoryFiles)
 import           Test.Hspec
+import System.Directory (doesDirectoryExist)
 
 compressFile :: FilePath -> Spec
 compressFile fp = parallel $
@@ -15,7 +16,11 @@ compressFile fp = parallel $
 
 main :: IO ()
 main = do
-    libs <- getDirectoryFiles "dist-newstyle" ["**/*.so", "**/*.dll"]
+    -- todo: check dist-newstyle exists
+    b <- doesDirectoryExist "dist-newstyle"
+    libs <- if b
+        then getDirectoryFiles "dist-newstyle" ["**/*.so", "**/*.dll"]
+        else pure []
     hspec $
         describe "decompress/compress" $
             traverse_ compressFile (("dist-newstyle" </>) <$> libs)
