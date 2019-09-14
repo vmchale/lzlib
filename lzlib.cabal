@@ -9,6 +9,7 @@ author:             Vanessa McHale
 synopsis:           lzlib bindings
 description:
     Lzlib bindings via [c2hs](http://hackage.haskell.org/package/c2hs).
+    Includes a bundled copy of lzlib
 
 category:           Codec, Compression
 build-type:         Simple
