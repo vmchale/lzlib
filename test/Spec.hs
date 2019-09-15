@@ -13,14 +13,17 @@ compressFile :: FilePath -> Spec
 compressFile fp = parallel $
     it "roundtrip should be identity" $ do
         str <- BS.readFile fp
-        decompressStrict (BSL.toStrict $ compress (BSL.fromStrict str)) `shouldBe` str
+        decompress (BSL.toStrict (compress str)) `shouldBe` (BSL.fromStrict str)
+
+roundtripFile :: FilePath -> Spec
+roundtripFile fp = parallel $
+    it "roundtrip should be identity" $ do
+        str <- BS.readFile fp
+        compress (BSL.toStrict (decompress str)) `shouldBe` (BSL.fromStrict str)
 
 main :: IO ()
-main = do
-    b <- doesDirectoryExist "dist-newstyle"
-    libs <- if b
-        then getDirectoryFiles "dist-newstyle" ["**/*.so", "**/*.dll"]
-        else pure []
-    hspec $ do
-        describe "decompress/compress" $
-            traverse_ compressFile (("dist-newstyle" </>) <$> libs)
+main = hspec $ do
+    describe "decompress/compress" $
+        traverse_ compressFile ["gmp-6.1.2.tar", "lzlib-1.10.tar"]
+    describe "compress/decompress" $
+        traverse_ roundtripFile ["gmp-6.1.2.tar.lz", "lzlib-1.10.tar.lz"]
