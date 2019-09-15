@@ -16,7 +16,6 @@ compressFile fp = parallel $
 
 main :: IO ()
 main = do
-    -- todo: check dist-newstyle exists
     b <- doesDirectoryExist "dist-newstyle"
     libs <- if b
         then getDirectoryFiles "dist-newstyle" ["**/*.so", "**/*.dll"]
