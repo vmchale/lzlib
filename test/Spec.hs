@@ -24,8 +24,3 @@ main = do
     hspec $ do
         describe "decompress/compress" $
             traverse_ compressFile (("dist-newstyle" </>) <$> libs)
-        describe "compress/decompress" $
-            parallel $ it "should work on gmp.tar.lz" $ do
-                str <- BS.readFile "gmp-6.1.2.tar.lz"
-                compressStrict (decompressStrict str) `shouldBe` str
-
