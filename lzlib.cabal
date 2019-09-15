@@ -1,6 +1,6 @@
 cabal-version:      1.18
 name:               lzlib
-version:            0.1.1.0
+version:            0.1.1.1
 license:            BSD3
 license-file:       LICENSE
 copyright:          Copyright: (c) 2019 Vanessa McHale
@@ -13,7 +13,20 @@ description:
 
 category:           Codec, Compression
 build-type:         Simple
-extra-source-files: stack.yaml
+extra-source-files:
+    stack.yaml
+    cbits/cbuffer.c
+    cbits/decoder.c
+    cbits/decoder.h
+    cbits/encoder.c
+    cbits/encoder.h
+    cbits/encoder_base.c
+    cbits/encoder_base.h
+    cbits/fast_encoder.c
+    cbits/fast_encoder.h
+    cbits/lzip.h
+    cbits/lzlib.h
+
 extra-doc-files:
     README.md
     CHANGELOG.md
