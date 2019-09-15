@@ -13,7 +13,7 @@ compressFile :: FilePath -> Spec
 compressFile fp = parallel $
     it "roundtrip should be identity" $ do
         str <- BS.readFile fp
-        decompressStrict (BSL.toStrict $ compress str) `shouldBe` str
+        decompressStrict (BSL.toStrict $ compress (BSL.fromStrict str)) `shouldBe` str
 
 main :: IO ()
 main = do
