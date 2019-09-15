@@ -4,7 +4,7 @@
 
   * Performance improvements
   * Pure functions no longer occur in IO
-  * Remove strict versions of functions
+  * Change type signatures of compression/decompression functions
 
 ## 0.1.1.1
   
