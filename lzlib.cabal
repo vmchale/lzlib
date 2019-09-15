@@ -60,7 +60,7 @@ library
         bytestring -any
 
     if !flag(cross)
-        build-tool-depends: c2hs:c2hs -any
+        build-tool-depends: c2hs:c2hs >=0.26.1
 
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
