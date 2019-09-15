@@ -9,7 +9,7 @@ module Codec.Lzip ( compress
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Monad         (forM_, void)
+import           Control.Monad         (void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
