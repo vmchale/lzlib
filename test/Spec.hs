@@ -1,13 +1,11 @@
 module Main ( main ) where
 
 import           Codec.Lzip
-import           Control.Monad                (filterM)
-import qualified Data.ByteString              as BS
-import qualified Data.ByteString.Lazy         as BSL
-import           Data.Foldable                (traverse_)
-import           System.Directory             (doesFileExist)
-import           System.FilePath              ((</>))
-import           System.FilePattern.Directory (getDirectoryFiles)
+import           Control.Monad        (filterM)
+import qualified Data.ByteString      as BS
+import qualified Data.ByteString.Lazy as BSL
+import           Data.Foldable        (traverse_)
+import           System.Directory     (doesFileExist)
 import           Test.Hspec
 
 compressFile :: FilePath -> Spec
