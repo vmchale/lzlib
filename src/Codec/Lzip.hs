@@ -9,10 +9,9 @@ module Codec.Lzip ( compressStrict
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Monad         (unless, void, when)
+import           Control.Monad         (void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
-import           Data.Functor          (($>))
 import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
 import           Data.Semigroup
