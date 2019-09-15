@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.1.1.1
+  
+  * Fix distribution
+
 ## 0.1.1.0
 
   * Add a higher-level API
