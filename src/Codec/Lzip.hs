@@ -89,13 +89,15 @@ compressStrict = compressWithStrict Nine
 compressWithStrict :: CompressionLevel -> BS.ByteString -> BS.ByteString
 compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
 
-    encoder <- lZCompressOpen (fromIntegral dictionarySize) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+    encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
 
+    -- TODO: make this lazy
     void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
     void $ lZCompressFinish encoder
 
-    newBytes <- mallocBytes sz
-    res <- readLoop encoder (newBytes, sz) 0 mempty
+    let delta = sz `div` 4 + 64
+    newBytes <- mallocBytes delta
+    res <- readLoop encoder (newBytes, delta) 0 mempty
 
     void $ lZCompressClose encoder
 
@@ -115,5 +117,6 @@ compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes,
         memberSize :: Int64
         memberSize = maxBound
 
-        dictionarySize = _dictionarySize $ encoderOptions level
+        -- saves memory
+        dictionarySize = max (fromIntegral lZMinDictionarySize) . min (_dictionarySize $ encoderOptions level)
         matchLenLimit = _matchLenLimit $ encoderOptions level
