@@ -51,18 +51,16 @@ library
     other-extensions: BangPatterns
     include-dirs:     cbits
     install-includes: cbits/lzlib.h
-    ghc-options:      -Wall
+    ghc-options:
+        -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+        -Wredundant-constraints
+
     build-depends:
         base >=4.9 && <5,
         bytestring -any
 
     if !flag(cross)
         build-tool-depends: c2hs:c2hs -any
-
-    if impl(ghc >=8.0)
-        ghc-options:
-            -Wincomplete-uni-patterns -Wincomplete-record-updates
-            -Wredundant-constraints
 
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
@@ -72,7 +70,10 @@ test-suite lzlib-test
     main-is:          Spec.hs
     hs-source-dirs:   test
     default-language: Haskell2010
-    ghc-options:      -threaded -rtsopts -with-rtsopts=-N -Wall
+    ghc-options:
+        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-uni-patterns
+        -Wincomplete-record-updates -Wredundant-constraints
+
     build-depends:
         base -any,
         lzlib -any,
@@ -82,10 +83,25 @@ test-suite lzlib-test
         filepath -any,
         directory -any
 
-    if impl(ghc >=8.0)
-        ghc-options:
-            -Wincomplete-uni-patterns -Wincomplete-record-updates
-            -Wredundant-constraints
+    if impl(ghc >=8.4)
+        ghc-options: -Wmissing-export-lists
+
+benchmark lzlib-bench
+    type:             exitcode-stdio-1.0
+    main-is:          Bench.hs
+    hs-source-dirs:   bench
+    default-language: Haskell2010
+    ghc-options:
+        -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+        -Wredundant-constraints
+
+    build-depends:
+        base -any,
+        lzlib -any,
+        criterion -any,
+        bytestring -any,
+        temporary -any,
+        filepath -any
 
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
