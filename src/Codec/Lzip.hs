@@ -11,6 +11,7 @@ import           Control.Monad         (unless, void, when)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import           Data.Int              (Int64)
+import           Data.Maybe            (fromMaybe)
 import           Data.Semigroup
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (Ptr, castPtr, plusPtr)
@@ -53,12 +54,8 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     maxSz <- lZDecompressWriteSize decoder
 
     let bufMax = min (fromIntegral maxSz) sz
-    writeLoop decoder (castPtr bytes, bufMax) 0 sz
-
-    void $ lZDecompressFinish decoder
-
     buf <- mallocBytes sz
-    res <- readLoop decoder (buf, sz) mempty
+    res <- loop decoder (buf, bufMax) (castPtr bytes, sz) 0 sz mempty
 
     void $ lZDecompressClose decoder
     free buf
@@ -66,26 +63,20 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
     pure res
 
     where
-        writeLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> Int -> Int -> IO ()
-        writeLoop decoder (bytes, bufMax) offset total =
-            if offset < total
-                then do
-                    let toWrite = min bufMax (total - offset)
-                    written <- lZDecompressWrite decoder (bytes `plusPtr` offset) (fromIntegral toWrite)
-                    writeLoop decoder (bytes, bufMax) (offset + toWrite) total
-                else pure ()
-
-        readLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> BS.ByteString -> IO BS.ByteString
-        readLoop decoder (bytes, sz) acc = do
-
-            bytesActual <- lZDecompressRead decoder bytes (fromIntegral sz)
-
+        loop :: LZDecoderPtr -> (Ptr UInt8, Int) -> (Ptr UInt8, Int) -> Int -> Int -> BS.ByteString -> IO BS.ByteString
+        loop decoder (buf, bufSz) (bytes, sz) offset total acc = do
+            let toWrite = min bufSz (total - offset)
+            bytesWritten <- if offset < total
+                then Just <$> lZDecompressWrite decoder (bytes `plusPtr` offset) (fromIntegral toWrite)
+                else Nothing <$ lZDecompressFinish decoder
             res <- lZDecompressFinished decoder
-
-            bsActual <- BS.packCStringLen (castPtr bytes, fromIntegral bytesActual)
             if res == 1
-                then pure (acc <> bsActual)
-                else readLoop decoder (bytes, sz) (acc <> bsActual)
+                then pure acc
+                else do
+                    let newOffset = offset + fromIntegral (fromMaybe 0 bytesWritten)
+                    bytesRead <- lZDecompressRead decoder buf (fromIntegral bufSz)
+                    bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
+                    loop decoder (buf, bufSz) (bytes, sz) newOffset total (acc <> bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
