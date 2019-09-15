@@ -65,12 +65,12 @@ type UInt8 = {# type uint8_t #}
 
 {# fun pure LZ_version as ^ {} -> `String' #}
 {# fun pure LZ_strerror as ^ { `LZErrno' } -> `String' #}
-{# fun LZ_min_dictionary_bits as ^ {} -> `CInt' #}
-{# fun LZ_min_dictionary_size as ^ {} -> `CInt' #}
-{# fun LZ_max_dictionary_bits as ^ {} -> `CInt' #}
-{# fun LZ_max_dictionary_size as ^ {} -> `CInt' #}
-{# fun LZ_min_match_len_limit as ^ {} -> `CInt' #}
-{# fun LZ_max_match_len_limit as ^ {} -> `CInt' #}
+{# fun pure LZ_min_dictionary_bits as ^ {} -> `CInt' #}
+{# fun pure LZ_min_dictionary_size as ^ {} -> `CInt' #}
+{# fun pure LZ_max_dictionary_bits as ^ {} -> `CInt' #}
+{# fun pure LZ_max_dictionary_size as ^ {} -> `CInt' #}
+{# fun pure LZ_min_match_len_limit as ^ {} -> `CInt' #}
+{# fun pure LZ_max_match_len_limit as ^ {} -> `CInt' #}
 
 instance Show LZErrno where
     show = lZStrerror
