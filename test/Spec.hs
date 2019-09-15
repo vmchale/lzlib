@@ -3,10 +3,10 @@ module Main ( main ) where
 import           Codec.Lzip
 import qualified Data.ByteString              as BS
 import           Data.Foldable                (traverse_)
+import           System.Directory             (doesDirectoryExist)
 import           System.FilePath              ((</>))
 import           System.FilePattern.Directory (getDirectoryFiles)
 import           Test.Hspec
-import System.Directory (doesDirectoryExist)
 
 compressFile :: FilePath -> Spec
 compressFile fp = parallel $
@@ -21,6 +21,11 @@ main = do
     libs <- if b
         then getDirectoryFiles "dist-newstyle" ["**/*.so", "**/*.dll"]
         else pure []
-    hspec $
+    hspec $ do
         describe "decompress/compress" $
             traverse_ compressFile (("dist-newstyle" </>) <$> libs)
+        describe "compress/decompress" $
+            parallel $ it "should work on gmp.tar.lz" $ do
+                str <- BS.readFile "gmp-6.1.2.tar.lz"
+                compressStrict (decompressStrict str) `shouldBe` str
+
