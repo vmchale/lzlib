@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Codec.Lzip ( compressStrict
-                  , compressWithStrict
+module Codec.Lzip ( compress
+                  , compressWith
                   , decompressStrict
                   , CompressionLevel (..)
                   -- * Low-level bindings
@@ -9,9 +9,10 @@ module Codec.Lzip ( compressStrict
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Monad         (void)
+import           Control.Monad         (forM_, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
+import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
 import           Data.Semigroup
@@ -80,19 +81,21 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
                     loop decoder (buf, bufSz) (bytes, sz) newOffset total (acc <> bsActual)
 
-{-# NOINLINE compressStrict #-}
-compressStrict :: BS.ByteString -> BS.ByteString
-compressStrict = compressWithStrict Nine
+{-# NOINLINE compress #-}
+compress :: BSL.ByteString -> BSL.ByteString
+compress = compressWith Nine
 
--- TODO: memory use
-{-# NOINLINE compressWithStrict #-}
-compressWithStrict :: CompressionLevel -> BS.ByteString -> BS.ByteString
-compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
+{-# NOINLINE compressWith #-}
+compressWith :: CompressionLevel -> BSL.ByteString -> BSL.ByteString
+compressWith level bs = unsafePerformIO $ do
+
+    let bss = BSL.toChunks bs
+        sz = BS.length (head bss)
 
     encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
 
-    -- TODO: make this lazy
-    void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
+    forM_ bss $ \bsLocal -> BS.useAsCStringLen bsLocal $ \(bytes, sz') ->
+            void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
     void $ lZCompressFinish encoder
 
     let delta = sz `div` 4 + 64
@@ -105,14 +108,14 @@ compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes,
 
     where
 
-        readLoop :: LZEncoderPtr -> (Ptr UInt8, Int) -> Int -> BS.ByteString -> IO BS.ByteString
+        readLoop :: LZEncoderPtr -> (Ptr UInt8, Int) -> Int -> BSL.ByteString -> IO BSL.ByteString
         readLoop encoder (buf, sz) bytesRead acc = do
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
             res <- lZCompressFinished encoder
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
-                then pure (acc <> bsActual)
-                else readLoop encoder (buf, sz) (bytesRead + fromIntegral bytesActual) (acc <> bsActual)
+                then pure (acc <> BSL.fromStrict bsActual)
+                else readLoop encoder (buf, sz) (bytesRead + fromIntegral bytesActual) (acc <> BSL.fromStrict bsActual)
 
         memberSize :: Int64
         memberSize = maxBound

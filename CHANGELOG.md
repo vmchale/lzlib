@@ -1,5 +1,11 @@
 # lzlib
 
+## 0.2.0.0
+
+  * Performance improvements
+  * Pure functions no longer occur in IO
+  * Remove strict versions of functions
+
 ## 0.1.1.1
   
   * Fix distribution
