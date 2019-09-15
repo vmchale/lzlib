@@ -79,8 +79,6 @@ test-suite lzlib-test
         lzlib -any,
         hspec -any,
         bytestring -any,
-        filepattern -any,
-        filepath -any,
         directory -any
 
     if impl(ghc >=8.4)
