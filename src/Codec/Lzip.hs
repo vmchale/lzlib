@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Codec.Lzip ( compressStrict
                   , compressWithStrict
                   , decompressStrict
@@ -10,6 +12,7 @@ import           Codec.Lzip.Raw
 import           Control.Monad         (unless, void, when)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
+import           Data.Functor          (($>))
 import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
 import           Data.Semigroup
@@ -64,7 +67,7 @@ decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> 
 
     where
         loop :: LZDecoderPtr -> (Ptr UInt8, Int) -> (Ptr UInt8, Int) -> Int -> Int -> BS.ByteString -> IO BS.ByteString
-        loop decoder (buf, bufSz) (bytes, sz) offset total acc = do
+        loop decoder (buf, bufSz) (bytes, sz) offset total !acc = do
             let toWrite = min bufSz (total - offset)
             bytesWritten <- if offset < total
                 then Just <$> lZDecompressWrite decoder (bytes `plusPtr` offset) (fromIntegral toWrite)
@@ -92,20 +95,23 @@ compressWithStrict level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes,
     void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz)
     void $ lZCompressFinish encoder
 
-    -- this is stupid but eh
     newBytes <- mallocBytes sz
-    bytesActual <- lZCompressRead encoder newBytes (fromIntegral sz)
-
-    res <- lZCompressFinished encoder
-
-    unless (res == 1) $
-        error "Shouldn't happen"
+    res <- readLoop encoder (newBytes, sz) 0 mempty
 
     void $ lZCompressClose encoder
 
-    BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual) <* free newBytes
+    pure res
 
     where
+
+        readLoop :: LZEncoderPtr -> (Ptr UInt8, Int) -> Int -> BS.ByteString -> IO BS.ByteString
+        readLoop encoder (buf, sz) bytesRead acc = do
+            bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
+            res <- lZCompressFinished encoder
+            bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
+            if res == 1
+                then pure (acc <> bsActual)
+                else readLoop encoder (buf, sz) (bytesRead + fromIntegral bytesActual) (acc <> bsActual)
 
         memberSize :: Int64
         memberSize = maxBound
