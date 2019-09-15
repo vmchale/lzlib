@@ -2,18 +2,18 @@ module Codec.Lzip ( compressStrict
                   , compressWithStrict
                   , decompressStrict
                   , CompressionLevel (..)
-                  -- * Lower-level bindings
+                  -- * Low-level bindings
                   , module Codec.Lzip.Raw
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Monad         (unless, void)
+import           Control.Monad         (unless, void, when)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import           Data.Int              (Int64)
 import           Data.Semigroup
 import           Foreign.Marshal.Alloc (free, mallocBytes)
-import           Foreign.Ptr           (Ptr, castPtr)
+import           Foreign.Ptr           (Ptr, castPtr, plusPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
 
 data CompressionLevel = Zero
@@ -43,37 +43,49 @@ encoderOptions Seven = LzOptions (1 `shiftL` 24) 68
 encoderOptions Eight = LzOptions (3 `shiftL` 23) 132
 encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 
+-- | This does not do any error recovery; for that you should use
+-- [lziprecover](https://www.nongnu.org/lzip/lziprecover.html).
 {-# NOINLINE decompressStrict #-}
 decompressStrict :: BS.ByteString -> BS.ByteString
 decompressStrict bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
 
     decoder <- lZDecompressOpen
+    maxSz <- lZDecompressWriteSize decoder
 
-    void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
+    let bufMax = min (fromIntegral maxSz) sz
+    writeLoop decoder (castPtr bytes, bufMax) 0 sz
+
     void $ lZDecompressFinish decoder
 
-    let bufSz = 4 * sz
-    buf <- mallocBytes bufSz
-
-    (newBuf, res) <- readLoop decoder (buf, bufSz) mempty
+    buf <- mallocBytes sz
+    res <- readLoop decoder (buf, sz) mempty
 
     void $ lZDecompressClose decoder
-    free newBuf
+    free buf
 
     pure res
 
     where
-        readLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> BS.ByteString -> IO (Ptr UInt8, BS.ByteString)
-        readLoop decoder (newBytes, sz) acc = do
+        writeLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> Int -> Int -> IO ()
+        writeLoop decoder (bytes, bufMax) offset total =
+            if offset < total
+                then do
+                    let toWrite = min bufMax (total - offset)
+                    written <- lZDecompressWrite decoder (bytes `plusPtr` offset) (fromIntegral toWrite)
+                    writeLoop decoder (bytes, bufMax) (offset + toWrite) total
+                else pure ()
 
-            bytesActual <- lZDecompressRead decoder newBytes (fromIntegral sz)
+        readLoop :: LZDecoderPtr -> (Ptr UInt8, Int) -> BS.ByteString -> IO BS.ByteString
+        readLoop decoder (bytes, sz) acc = do
+
+            bytesActual <- lZDecompressRead decoder bytes (fromIntegral sz)
 
             res <- lZDecompressFinished decoder
 
-            bsActual <- BS.packCStringLen (castPtr newBytes, fromIntegral bytesActual)
+            bsActual <- BS.packCStringLen (castPtr bytes, fromIntegral bytesActual)
             if res == 1
-                then pure (newBytes, acc <> bsActual)
-                else readLoop decoder (newBytes, sz) (acc <> bsActual)
+                then pure (acc <> bsActual)
+                else readLoop decoder (bytes, sz) (acc <> bsActual)
 
 {-# NOINLINE compressStrict #-}
 compressStrict :: BS.ByteString -> BS.ByteString
