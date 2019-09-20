@@ -1,6 +1,8 @@
 #!/usr/bin/env bash 
 
-wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz
-http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz
+set -e
+
+wget https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz -O gmp-6.1.2.tar.lz
+wget http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -O lzlib-1.10.tar.lz
 lzip --keep --decompress lzlib-1.10.tar.lz
 lzip --keep --decompress gmp-6.1.2.tar.lz
