@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.2.0.1
+
+  * Performance improvements
+
 ## 0.2.0.0
 
   * Performance improvements
@@ -7,7 +11,7 @@
   * Change type signatures of compression/decompression functions
 
 ## 0.1.1.1
-  
+
   * Fix distribution
 
 ## 0.1.1.0
