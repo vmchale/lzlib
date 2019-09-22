@@ -51,6 +51,7 @@ library
     other-extensions: BangPatterns
     include-dirs:     cbits
     install-includes: cbits/lzlib.h
+    cc-options: -O1
     ghc-options:
         -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
         -Wredundant-constraints
