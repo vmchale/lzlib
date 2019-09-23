@@ -15,7 +15,6 @@ import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
 import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
-import           Data.Semigroup
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (Ptr, castPtr, plusPtr)
 import           System.IO.Unsafe      (unsafePerformIO)
