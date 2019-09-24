@@ -17,7 +17,7 @@ import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
 import           Foreign.Marshal.Alloc (free, mallocBytes)
 import           Foreign.Ptr           (Ptr, castPtr, plusPtr)
-import           System.IO.Unsafe      (unsafePerformIO)
+import           System.IO.Unsafe      (unsafeDupablePerformIO)
 
 data CompressionLevel = Zero
                       | One
@@ -50,7 +50,7 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- [lziprecover](https://www.nongnu.org/lzip/lziprecover.html).
 {-# NOINLINE decompress #-}
 decompress :: BS.ByteString -> BSL.ByteString
-decompress bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
+decompress bs = unsafeDupablePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
 
     decoder <- lZDecompressOpen
     maxSz <- lZDecompressWriteSize decoder
@@ -86,7 +86,7 @@ compress = compressWith Nine
 
 {-# NOINLINE compressWith #-}
 compressWith :: CompressionLevel -> BS.ByteString -> BSL.ByteString
-compressWith level bs = unsafePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
+compressWith level bs = unsafeDupablePerformIO $ BS.useAsCStringLen bs $ \(bytes, sz) -> do
 
     encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
 
