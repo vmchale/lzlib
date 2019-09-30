@@ -54,7 +54,6 @@ module Codec.Lzip.Raw ( -- * Prolegomena
 import Foreign.C.Types
 import Foreign.Ptr (Ptr)
 
-#include <stdint.h>
 #include <lzlib.h>
 
 type UInt8 = {# type uint8_t #}
