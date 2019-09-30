@@ -4,5 +4,5 @@ set -e pipefail
 
 for arch in aarch64-linux-gnu arm-linux-gnueabihf
 do
-    PKG_CONFIG_PATH="$(cpkg dump pkg-config libarchive --target="$arch")" cabal build --with-ghc="$arch"-ghc --with-ghc-pkg="$arch"-ghc-pkg --constraint='lzlib +cross' --with-c2hs=c2hs
+    cabal build --with-ghc="$arch"-ghc --with-ghc-pkg="$arch"-ghc-pkg --constraint='lzlib +cross' --with-c2hs=c2hs
 done
