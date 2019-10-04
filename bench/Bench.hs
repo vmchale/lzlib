@@ -8,9 +8,9 @@ import           System.FilePath      ((</>))
 import           System.IO.Temp       (withSystemTempDirectory)
 
 roundtrip :: BS.ByteString -> BSL.ByteString
-roundtrip = compress . BSL.toStrict . decompress
+roundtrip = compress . decompress
 
-roundtrip' :: BS.ByteString -> BSL.ByteString
+roundtrip' :: BSL.ByteString -> BSL.ByteString
 roundtrip' = decompress . BSL.toStrict . compress
 
 unpack :: IO ()
@@ -21,7 +21,7 @@ unpack = withSystemTempDirectory "lzlib" $
 unpack' :: IO ()
 unpack' = withSystemTempDirectory "lzlib" $
     \fp -> BSL.writeFile (fp </> "lzlib.tar") =<<
-        (roundtrip' <$> BS.readFile "lzlib-1.10.tar")
+        (roundtrip' <$> BSL.readFile "lzlib-1.10.tar")
 
 main :: IO ()
 main =
@@ -37,4 +37,4 @@ main =
                       [ bench "lzlib" $ nfIO unpack' ]
                 ]
     where file = BS.readFile "lzlib-1.10.tar.lz"
-          decompressed = BS.readFile "lzlib-1.10.tar"
+          decompressed = BSL.readFile "lzlib-1.10.tar"
