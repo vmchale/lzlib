@@ -80,10 +80,10 @@ data LZEncoder
 
 {# pointer *LZ_Encoder as LZEncoderPtr -> LZEncoder #}
 
-{# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `LZEncoderPtr' #}
+{# fun LZ_compress_open as ^ { `CInt', `CInt', `CULLong' } -> `LZEncoderPtr' #}
 {# fun LZ_compress_close as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun LZ_compress_restart_member as ^ { `LZEncoderPtr', id `CULLong' } -> `CInt' #}
+{# fun LZ_compress_restart_member as ^ { `LZEncoderPtr', `CULLong' } -> `CInt' #}
 {# fun LZ_compress_sync_flush as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
@@ -91,10 +91,10 @@ data LZEncoder
 {# fun LZ_compress_errno as ^ { `LZEncoderPtr' } -> `LZErrno' #}
 {# fun LZ_compress_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_member_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun LZ_compress_data_position as ^ { `LZEncoderPtr' } -> `CULLong' id #}
-{# fun LZ_compress_member_position as ^ { `LZEncoderPtr' } -> `CULLong' id #}
-{# fun LZ_compress_total_in_size as ^ { `LZEncoderPtr' } -> `CULLong' id #}
-{# fun LZ_compress_total_out_size as ^ { `LZEncoderPtr' } -> `CULLong' id #}
+{# fun LZ_compress_data_position as ^ { `LZEncoderPtr' } -> `CULLong' #}
+{# fun LZ_compress_member_position as ^ { `LZEncoderPtr' } -> `CULLong' #}
+{# fun LZ_compress_total_in_size as ^ { `LZEncoderPtr' } -> `CULLong' #}
+{# fun LZ_compress_total_out_size as ^ { `LZEncoderPtr' } -> `CULLong' #}
 
 -- | Abstract data type
 data LZDecoder
@@ -114,7 +114,7 @@ data LZDecoder
 {# fun LZ_decompress_member_finished as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_dictionary_size as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_data_crc as ^ { `LZDecoderPtr' } -> `CUInt' #}
-{# fun LZ_decompress_data_position as ^ { `LZDecoderPtr' } -> `CULLong' id #}
-{# fun LZ_decompress_member_position as ^ { `LZDecoderPtr' } -> `CULLong' id #}
-{# fun LZ_decompress_total_in_size as ^ { `LZDecoderPtr' } -> `CULLong' id #}
-{# fun LZ_decompress_total_out_size as ^ { `LZDecoderPtr' } -> `CULLong' id #}
+{# fun LZ_decompress_data_position as ^ { `LZDecoderPtr' } -> `CULLong' #}
+{# fun LZ_decompress_member_position as ^ { `LZDecoderPtr' } -> `CULLong' #}
+{# fun LZ_decompress_total_in_size as ^ { `LZDecoderPtr' } -> `CULLong' #}
+{# fun LZ_decompress_total_out_size as ^ { `LZDecoderPtr' } -> `CULLong' #}
