@@ -107,9 +107,12 @@ compressWith level bstr = unsafeDupablePerformIO $ do
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
         loop encoder bss (buf, sz) bytesRead acc = do
             bss' <- case bss of
+                [bs] -> BS.useAsCStringLen bs $ \(bytes, sz') -> do
+                    void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
+                    lZCompressFinish encoder $> []
                 (bs:bss') -> BS.useAsCStringLen bs $ \(bytes, sz') ->
                     lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
-                [] -> lZCompressFinish encoder $> []
+                [] -> pure []
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
             res <- lZCompressFinished encoder
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
