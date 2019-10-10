@@ -73,7 +73,7 @@ decompress bs = unsafeDupablePerformIO $ do
         loop :: LZDecoderPtr -> [BS.ByteString] -> Int -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
         loop decoder bss maxSz (buf, bufSz) !acc = do
             bss' <- case bss of
-                [bs'] -> if BS.length bs' > maxSz 
+                [bs'] -> if BS.length bs' > maxSz
                     then do
                         let (bs'', rest) = BS.splitAt maxSz bs'
                         BS.useAsCStringLen bs'' $ \(bytes, sz) ->
