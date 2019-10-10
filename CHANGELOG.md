@@ -1,5 +1,10 @@
 # lzlib
 
+## 0.3.0.0
+
+  * Take a `BSL.ByteString` as input
+  * Performance improvements
+
 ## 0.2.0.2
 
   * Performance improvements
