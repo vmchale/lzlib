@@ -7,16 +7,16 @@ import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath      ((</>))
 import           System.IO.Temp       (withSystemTempDirectory)
 
-roundtrip :: BS.ByteString -> BSL.ByteString
+roundtrip :: BSL.ByteString -> BSL.ByteString
 roundtrip = compress . decompress
 
 roundtrip' :: BSL.ByteString -> BSL.ByteString
-roundtrip' = decompress . BSL.toStrict . compress
+roundtrip' = decompress . compress
 
 unpack :: IO ()
 unpack = withSystemTempDirectory "lzlib" $
     \fp -> BSL.writeFile (fp </> "lzlib.tar.lz") =<<
-        (roundtrip <$> BS.readFile "lzlib-1.10.tar.lz")
+        (roundtrip <$> BSL.readFile "lzlib-1.10.tar.lz")
 
 unpack' :: IO ()
 unpack' = withSystemTempDirectory "lzlib" $
@@ -36,5 +36,5 @@ main =
                 , bgroup "unpack"
                       [ bench "lzlib" $ nfIO unpack' ]
                 ]
-    where file = BS.readFile "lzlib-1.10.tar.lz"
+    where file = BSL.readFile "lzlib-1.10.tar.lz"
           decompressed = BSL.readFile "lzlib-1.10.tar"

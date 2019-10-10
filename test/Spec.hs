@@ -2,7 +2,6 @@ module Main ( main ) where
 
 import           Codec.Lzip
 import           Control.Monad        (filterM)
-import qualified Data.ByteString      as BS
 import qualified Data.ByteString.Lazy as BSL
 import           Data.Foldable        (traverse_)
 import           System.Directory     (doesFileExist)
@@ -12,13 +11,13 @@ compressFile :: FilePath -> Spec
 compressFile fp = parallel $
     it "roundtrip should be identity" $ do
         str <- BSL.readFile fp
-        decompress (BSL.toStrict (compress str)) `shouldBe` str
+        decompress (compress str) `shouldBe` str
 
 roundtripFile :: FilePath -> Spec
 roundtripFile fp = parallel $
     it "roundtrip should be identity" $ do
-        str <- BS.readFile fp
-        compress (decompress str) `shouldBe` (BSL.fromStrict str)
+        str <- BSL.readFile fp
+        compress (decompress str) `shouldBe` str
 
 main :: IO ()
 main = do
