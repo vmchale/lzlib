@@ -13,6 +13,7 @@ import           Control.Monad         (forM_, void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
 import qualified Data.ByteString.Lazy  as BSL
+import           Data.Functor          (($>))
 import           Data.Int              (Int64)
 import           Data.Maybe            (fromMaybe)
 import           Foreign.Marshal.Alloc (free, mallocBytes)
@@ -94,28 +95,27 @@ compressWith level bstr = unsafeDupablePerformIO $ do
 
     encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
 
-    forM_ bss $ \bs -> BS.useAsCStringLen bs $ \(bytes, sz') ->
-        void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
-
-    void $ lZCompressFinish encoder
-
     let delta = sz `div` 4 + 64
     newBytes <- mallocBytes delta
-    res <- loop encoder (newBytes, delta) 0 mempty
+    res <- loop encoder bss (newBytes, delta) 0 mempty
 
     void $ lZCompressClose encoder
 
     pure (BSL.fromChunks res)
 
     where
-        loop :: LZEncoderPtr -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
-        loop encoder (buf, sz) bytesRead acc = do
+        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
+        loop encoder bss (buf, sz) bytesRead acc = do
+            bss' <- case bss of
+                (bs:bss') -> BS.useAsCStringLen bs $ \(bytes, sz') ->
+                    lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
+                [] -> lZCompressFinish encoder $> []
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
             res <- lZCompressFinished encoder
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
                 then pure (acc ++ [bsActual])
-                else loop encoder (buf, sz) (bytesRead + fromIntegral bytesActual) (acc ++ [bsActual])
+                else loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual) (acc ++ [bsActual])
 
         memberSize :: Int64
         memberSize = maxBound
