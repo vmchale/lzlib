@@ -58,6 +58,8 @@ decompress bs = unsafeDupablePerformIO $ do
     maxSz <- lZDecompressWriteSize decoder
 
     let bss = BSL.toChunks bs
+        -- TODO: this might be silly: does it force everything into memory
+        -- prematurely?
         sz = maximum (BS.length <$> bss)
         bufMax = fromIntegral maxSz
 
