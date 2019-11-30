@@ -1,4 +1,5 @@
 .hspec-failures
+*.tar*
 *.swp
 tags
 dist-newstyle
