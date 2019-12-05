@@ -6,7 +6,7 @@ let BuildStep =
       >
 
 in  { name = "Haskell CI"
-    , on = "[push]"
+    , on = [ "push" ]
     , jobs =
         { build =
             { runs-on = "ubuntu-latest"
@@ -27,14 +27,8 @@ in  { name = "Haskell CI"
                         , "make -j"
                         ]
                     }
-                , BuildStep.Name
-                    { name = "Build"
-                    , run = [ "cabal build" ]
-                    }
-                , BuildStep.Name
-                    { name = "Tests"
-                    , run = [ "cabal test" ]
-                    }
+                , BuildStep.Name { name = "Build", run = [ "cabal build" ] }
+                , BuildStep.Name { name = "Tests", run = [ "cabal test" ] }
                 ]
             }
         }
