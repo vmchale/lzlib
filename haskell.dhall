@@ -2,7 +2,7 @@ let VersionInfo = { ghc-version : Text, cabal-version : Text }
 
 let BuildStep =
       < Uses : { uses : Text, with : Optional VersionInfo }
-      | Name : { name : Text, run : List Text }
+      | Name : { name : Text, run : Text }
       >
 
 in  { name = "Haskell CI"
@@ -21,14 +21,15 @@ in  { name = "Haskell CI"
                 , BuildStep.Name
                     { name = "Install dependencies"
                     , run =
-                        [ "sudo apt install lzip"
-                        , "cabal update"
-                        , "cabal build lzlib-test --only-dependencies"
-                        , "make -j"
-                        ]
+                        ''
+                        sudo apt install lzip
+                        cabal update
+                        cabal build --enable-tests --only-dependencies
+                        make -j
+                        ''
                     }
-                , BuildStep.Name { name = "Build", run = [ "cabal build" ] }
-                , BuildStep.Name { name = "Tests", run = [ "cabal test" ] }
+                , BuildStep.Name { name = "Build", run = "cabal build" }
+                , BuildStep.Name { name = "Tests", run = "cabal test" }
                 ]
             }
         }
