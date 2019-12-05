@@ -11,7 +11,7 @@ Haskell bindings to [lzlib](https://www.nongnu.org/lzip/lzlib.html).
 Run
 
 ```bash
-./bash/setup
+make -j
 ```
 
 to download a few tarballs before running the test suite.
