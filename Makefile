@@ -3,7 +3,7 @@
 setup: gmp-6.1.2.tar lzlib-1.10.tar
 
 clean:
-	rm -rf .stack-work dist-newstyle dist *.tar* *.hp *.prof stack.yaml.lock
+	rm -rf .stack-work dist-newstyle dist *.tar* *.hp *.prof stack.yaml.lock .hspec-failures
 
 %.tar: %.tar.lz
 	lzip --keep --decompress --force $@.lz
