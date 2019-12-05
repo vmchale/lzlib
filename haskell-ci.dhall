@@ -5,6 +5,20 @@ let BuildStep =
       | Name : { name : Text, run : Text }
       >
 
+let cabalDeps =
+      BuildStep.Name
+        { name = "Install dependencies"
+        , run =
+            ''
+            cabal update
+            cabal build --enable-tests --only-dependencies
+            ''
+        }
+
+let cabalBuild = BuildStep.Name { name = "Build", run = "cabal build" }
+
+let cabalTest = BuildStep.Name { name = "Tests", run = "cabal test" }
+
 in  { name = "Haskell CI"
     , on = [ "push" ]
     , jobs =
@@ -18,18 +32,17 @@ in  { name = "Haskell CI"
                     , with =
                         Some { ghc-version = "8.8.1", cabal-version = "3.0" }
                     }
+                , cabalDeps
+                , cabalBuild
                 , BuildStep.Name
-                    { name = "Install dependencies"
+                    { name = "Get test data"
                     , run =
                         ''
                         sudo apt install lzip
-                        cabal update
-                        cabal build --enable-tests --only-dependencies
                         make -j
                         ''
                     }
-                , BuildStep.Name { name = "Build", run = "cabal build" }
-                , BuildStep.Name { name = "Tests", run = "cabal test" }
+                , cabalTest
                 ]
             }
         }

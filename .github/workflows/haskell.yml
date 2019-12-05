@@ -9,12 +9,14 @@ jobs:
           ghc-version: "8.8.1"
       - name: "Install dependencies"
         run: |
-          sudo apt install lzip
           cabal update
           cabal build --enable-tests --only-dependencies
-          make -j
       - name: Build
         run: "cabal build"
+      - name: "Get test data"
+        run: |
+          sudo apt install lzip
+          make -j
       - name: Tests
         run: "cabal test"
 name: "Haskell CI"
