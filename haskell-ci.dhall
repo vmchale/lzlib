@@ -11,13 +11,19 @@ let cabalDeps =
         , run =
             ''
             cabal update
-            cabal build --enable-tests --only-dependencies
+            cabal build --enable-tests --enable-benchmarks --only-dependencies
             ''
         }
 
-let cabalBuild = BuildStep.Name { name = "Build", run = "cabal build" }
+let cabalBuild =
+      BuildStep.Name
+        { name = "Build"
+        , run = "cabal build --enable-tests --enable-benchmakrs"
+        }
 
 let cabalTest = BuildStep.Name { name = "Tests", run = "cabal test" }
+
+let cabalDoc = BuildStep.Name { name = "Documentation", run = "cabal haddock" }
 
 in  { name = "Haskell CI"
     , on = [ "push" ]
@@ -43,6 +49,7 @@ in  { name = "Haskell CI"
                         ''
                     }
                 , cabalTest
+                , cabalDoc
                 ]
             }
         }
