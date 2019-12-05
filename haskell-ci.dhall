@@ -18,7 +18,7 @@ let cabalDeps =
 let cabalBuild =
       BuildStep.Name
         { name = "Build"
-        , run = "cabal build --enable-tests --enable-benchmakrs"
+        , run = "cabal build --enable-tests --enable-benchmarks"
         }
 
 let cabalTest = BuildStep.Name { name = "Tests", run = "cabal test" }
