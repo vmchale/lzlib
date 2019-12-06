@@ -1,6 +1,6 @@
 let haskellCi = https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall
 
-in  haskellCi.defaultWith
+in  haskellCi.generalCi
                 [ haskellCi.checkout
                 , haskellCi.haskellEnv haskellCi.matrixEnv
                 , haskellCi.cabalDeps
