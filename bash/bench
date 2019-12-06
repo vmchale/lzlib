@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+bench "lzip --keep --decompress --force lzlib-1.10.tar.lz" \
+    "lzip --keep --decompress --force gmp-6.1.2.tar.lz"
