@@ -1,5 +1,4 @@
-let haskellCi = ../../../dhall/github-actions-dhall/haskell-ci.dhall
--- https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall
+let haskellCi = https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall
 
 in  haskellCi.defaultWith
                 [ haskellCi.checkout
