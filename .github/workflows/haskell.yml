@@ -21,16 +21,16 @@ jobs:
         run: "cabal test"
       - name: Documentation
         run: "cabal haddock"
-  strategy:
-    matrix:
-      cabal:
-        - "3.0"
-      ghc:
-        - "8.0.2"
-        - "8.2.2"
-        - "8.4.4"
-        - "8.6.5"
-        - "8.8.1"
+    strategy:
+      matrix:
+        cabal:
+          - "3.0"
+        ghc:
+          - "8.0.2"
+          - "8.2.2"
+          - "8.4.4"
+          - "8.6.5"
+          - "8.8.1"
 name: "Haskell CI"
 on:
   - push
