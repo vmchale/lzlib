@@ -11,6 +11,7 @@ jobs:
           pip install yamllint --upgrade
       - name: "Check YAML"
         run: |
+          export PATH=$HOME/.local/bin:$PATH
           yamllint stack.yaml
 name: "YAML check"
 on:
