@@ -1,3 +1,3 @@
-let haskellCi = https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall sha256:54219f032460ae0c0300a3ae535747e4a9c89b5ffca74ad73a782fc5142f3d86
+let haskellCi = https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall sha256:decfd4579e49d96095b3dfaaf82e31db96028ae7656796480e4764f30d60d790
 
 in  haskellCi.hlintAction [ "src", "test", "bench" ] : haskellCi.CI.Type
