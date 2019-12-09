@@ -1,0 +1,13 @@
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: "actions/checkout@v1"
+      - name: "Install yamllint"
+        run: "pip install yamllint --upgrade"
+      - name: "Check YAML"
+        run: |
+          yamllint stack.yaml
+name: "YAML check"
+on:
+  - push
