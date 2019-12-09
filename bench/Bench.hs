@@ -26,14 +26,16 @@ main :: IO ()
 main =
     defaultMain [ env files $ \ ~(f, g) ->
                   bgroup "roundtrip"
-                      [ bench "lzlib" $ nf roundtrip f
-                      , bench "lzlib" $ nf roundtrip g
+                      [ bench "lzlib (lzlib)" $ nf roundtrip f
+                      , bench "lzlib (gmp)" $ nf roundtrip g
                       ]
                 , bgroup "unpack"
                       [ bench "lzlib" $ nfIO unpack ]
-                , env decompressed $ \f ->
+                , env decompressedFiles $ \ ~(f, g) ->
                   bgroup "roundtrip'"
-                      [ bench "lzlib" $ nf roundtrip' f ]
+                      [ bench "lzlib (lzlib)" $ nf roundtrip' f
+                      , bench "lzlib (gmp)" $ nf roundtrip' g
+                      ]
                 , bgroup "unpack"
                       [ bench "lzlib" $ nfIO unpack' ]
                 ]
@@ -41,3 +43,5 @@ main =
           bigFile = BSL.readFile "gmp-6.1.2.tar.lz"
           files = (,) <$> file <*> bigFile
           decompressed = BSL.readFile "lzlib-1.10.tar"
+          bigDecompressed = BSL.readFile "gmp-6.1.2.tar"
+          decompressedFiles = (,) <$> decompressed <*> bigDecompressed

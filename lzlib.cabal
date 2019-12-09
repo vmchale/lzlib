@@ -1,6 +1,6 @@
 cabal-version:      1.18
 name:               lzlib
-version:            0.3.0.0
+version:            0.3.0.1
 license:            BSD3
 license-file:       LICENSE
 copyright:          Copyright: (c) 2019 Vanessa McHale
@@ -45,7 +45,7 @@ library
         Codec.Lzip
         Codec.Lzip.Raw
 
-    cc-options:       -O1
+    cc-options:       -O3
     c-sources:        cbits/lzlib.c
     hs-source-dirs:   src
     default-language: Haskell2010
