@@ -1,0 +1,18 @@
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: "actions/checkout@v1"
+      - name: "Install wheel"
+        run: |
+          pip install wheel --upgrade
+      - name: "Install yamllint"
+        run: |
+          pip install yamllint --upgrade
+      - name: "Check YAML"
+        run: |
+          export PATH=$HOME/.local/bin:$PATH
+          yamllint stack.yaml
+name: "YAML check"
+on:
+  - push

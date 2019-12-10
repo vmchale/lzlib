@@ -14,7 +14,13 @@ gmp-6.1.2.tar.lz:
 lzlib-1.10.tar.lz:
 	wget http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -O $@
 
-ci: .github/workflows/haskell.yml
+ci: .github/workflows/haskell.yml .github/workflows/hlint.yml .github/workflows/yamllint.yml
+
+.github/workflows/hlint.yml: hlint-ci.dhall
+	dhall-to-yaml --file $< --output $@
 
 .github/workflows/haskell.yml: haskell-ci.dhall
+	dhall-to-yaml --file $< --output $@
+
+.github/workflows/yamllint.yml: yaml-ci.dhall
 	dhall-to-yaml --file $< --output $@

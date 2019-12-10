@@ -4,4 +4,4 @@
 *.hsig linguist-language=Haskell
 *.gc linguist-language=Haskell
 cbits/* linguist-vendored
-.github/workflows/haskell.yaml linguist-vendored
+.github/workflows/*.yaml linguist-vendored
