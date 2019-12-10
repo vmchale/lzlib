@@ -22,6 +22,6 @@ jobs:
           dhall-to-yaml --file yaml-ci.dhall
           dhall-to-yaml --file hlint-ci.dhall
           dhall-to-yaml --file haskell-ci.dhall
-name: "Haskell CI"
+name: "Dhall CI"
 on:
   - push
