@@ -1,5 +1,5 @@
 let haskellCi =
-      https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall sha256:979469f6068f4bfa5e205f6a6b6faa02ae2bf9159425949075af242ce96e5df4
+      https://raw.githubusercontent.com/vmchale/github-actions-dhall/master/haskell-ci.dhall sha256:053b3f92d301dab85217e1fd5c0478bc69841c3309604168a5a8121b4226ae54
 
 in    haskellCi.generalCi
         [ haskellCi.checkout
@@ -26,7 +26,6 @@ in    haskellCi.generalCi
                 , haskellCi.GHC.GHC881
                 ]
             , cabal = [ haskellCi.Cabal.Cabal30 ]
-            , operating-system = [ haskellCi.OS.Ubuntu1804 ]
             }
         )
     : haskellCi.CI.Type
