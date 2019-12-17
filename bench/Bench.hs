@@ -25,16 +25,16 @@ unpack' = withSystemTempDirectory "lzlib" $
 main :: IO ()
 main =
     defaultMain [ env file $ \ f ->
-                  bgroup "roundtrip"
+                  bgroup "roundtrip (decompress/compress)"
                       [ bench "lzlib (lzlib)" $ nf roundtrip f
                       ]
-                , bgroup "unpack"
+                , bgroup "unpack (decompress/compress)"
                       [ bench "lzlib" $ nfIO unpack ]
                 , env decompressed $ \ f ->
-                  bgroup "roundtrip'"
+                  bgroup "roundtrip' (compress/decompress)"
                       [ bench "lzlib (lzlib)" $ nf roundtrip' f
                       ]
-                , bgroup "unpack"
+                , bgroup "unpack' (compress/decompress)"
                       [ bench "lzlib" $ nfIO unpack' ]
                 ]
     where file = BSL.readFile "lzlib-1.10.tar.lz"
