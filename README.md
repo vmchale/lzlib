@@ -7,7 +7,7 @@
 
 Haskell bindings to [lzlib](https://www.nongnu.org/lzip/lzlib.html).
 
-This package includes a high-level interface to lzlib, however, it is slow.
+This package includes a high-level interface to lzlib.
 
 ## Hacking
 
