@@ -7,7 +7,15 @@
 
 Haskell bindings to [lzlib](https://www.nongnu.org/lzip/lzlib.html).
 
-This package includes a high-level interface to lzlib.
+This package includes a high-level interface to lzlib. It provides performance
+comparable to the [lzip](https://www.nongnu.org/lzip/) command-line tool.
+
+## Comparison
+
+Compared to the [lzip](http://hackage.haskell.org/package/lzip) Haskell library:
+
+  * Uses `c2hs` instead of `hsc2hs`
+  * Provides a high-level (`ByteString`-based) API
 
 ## Hacking
 

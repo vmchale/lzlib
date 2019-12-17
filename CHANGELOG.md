@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.0.2
+
+  * Documentation improvements
+
 ## 0.3.0.1
 
   * Performance improvements

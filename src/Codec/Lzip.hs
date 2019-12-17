@@ -92,8 +92,8 @@ decompress bs = unsafeDupablePerformIO $ do
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> rest:bss'
                     else
                         BS.useAsCStringLen bs' $ \(bytes, sz) ->
-                        lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $>
-                        bss'
+                            lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $>
+                            bss'
                 [] -> pure []
 
             res <- lZDecompressFinished decoder
