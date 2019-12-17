@@ -14,16 +14,7 @@ This package includes a high-level interface to lzlib, however, it is slow.
 Run
 
 ```bash
-make -j
+make
 ```
 
 to download a few tarballs before running the test suite.
-
-### CI
-
-To edit the CI script, edit `haskell-ci.dhall` and regenerate
-`.github/workflows/haskell.yml` with
-
-```
-make ci
-```
