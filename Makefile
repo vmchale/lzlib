@@ -2,7 +2,6 @@
 
 SHELL := bash
 MAKEFLAGS += --warn-undefined-variables --no-builtin-rules -j
-.SHELLFLAGS := -eu pipefail
 .DELETE_ON_ERROR:
 
 setup: gmp-6.1.2.tar lzlib-1.10.tar
