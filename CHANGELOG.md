@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.0.4
+
+  * Use `bracket` and fix space leak
+
 ## 0.3.0.3
 
   * Use `bracket` so that memory is freed if an exception is thrown in another
