@@ -1,5 +1,14 @@
 # lzlib
 
+## 0.3.0.3
+
+  * Use `bracket` so that memory is freed if an exception is thrown in another
+    thread
+
+## 0.3.0.2
+
+  * Documentation improvements
+
 ## 0.3.0.1
 
   * Performance improvements

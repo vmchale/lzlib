@@ -24,24 +24,18 @@ unpack' = withSystemTempDirectory "lzlib" $
 
 main :: IO ()
 main =
-    defaultMain [ env files $ \ ~(f, g) ->
-                  bgroup "roundtrip"
+    defaultMain [ env file $ \ f ->
+                  bgroup "roundtrip (decompress/compress)"
                       [ bench "lzlib (lzlib)" $ nf roundtrip f
-                      , bench "lzlib (gmp)" $ nf roundtrip g
                       ]
-                , bgroup "unpack"
+                , bgroup "unpack (decompress/compress)"
                       [ bench "lzlib" $ nfIO unpack ]
-                , env decompressedFiles $ \ ~(f, g) ->
-                  bgroup "roundtrip'"
+                , env decompressed $ \ f ->
+                  bgroup "roundtrip' (compress/decompress)"
                       [ bench "lzlib (lzlib)" $ nf roundtrip' f
-                      , bench "lzlib (gmp)" $ nf roundtrip' g
                       ]
-                , bgroup "unpack"
+                , bgroup "unpack' (compress/decompress)"
                       [ bench "lzlib" $ nfIO unpack' ]
                 ]
     where file = BSL.readFile "lzlib-1.10.tar.lz"
-          bigFile = BSL.readFile "gmp-6.1.2.tar.lz"
-          files = (,) <$> file <*> bigFile
           decompressed = BSL.readFile "lzlib-1.10.tar"
-          bigDecompressed = BSL.readFile "gmp-6.1.2.tar"
-          decompressedFiles = (,) <$> decompressed <*> bigDecompressed

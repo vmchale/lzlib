@@ -9,6 +9,7 @@ module Codec.Lzip ( compress
                   ) where
 
 import           Codec.Lzip.Raw
+import           Control.Exception     (bracket)
 import           Control.Monad         (void)
 import           Data.Bits             (shiftL)
 import qualified Data.ByteString       as BS
@@ -63,11 +64,10 @@ decompress bs = unsafeDupablePerformIO $ do
         sz = maximum (BS.length <$> bss)
         bufMax = fromIntegral maxSz
 
-    buf <- mallocBytes sz
-    res <- loop decoder bss bufMax (buf, sz) mempty
-
-    void $ lZDecompressClose decoder
-    free buf
+    res <- bracket
+        (mallocBytes sz)
+        ((lZDecompressClose decoder *>) . free)
+        (\buf -> loop decoder bss bufMax (buf, sz) mempty)
 
     pure (BSL.fromChunks res)
 
@@ -92,8 +92,8 @@ decompress bs = unsafeDupablePerformIO $ do
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> rest:bss'
                     else
                         BS.useAsCStringLen bs' $ \(bytes, sz) ->
-                        lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $>
-                        bss'
+                            lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $>
+                            bss'
                 [] -> pure []
 
             res <- lZDecompressFinished decoder
