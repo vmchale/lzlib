@@ -119,10 +119,10 @@ compressWith level bstr = unsafeDupablePerformIO $ do
     encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
 
     let delta = sz `div` 4 + 64
-    newBytes <- mallocBytes delta
-    res <- loop encoder bss (newBytes, delta) 0 mempty
-
-    void $ lZCompressClose encoder
+    res <-bracket
+        (mallocBytes delta)
+        ((lZCompressClose encoder *>) . free)
+        (\newBytes -> loop encoder bss (newBytes, delta) 0 mempty)
 
     pure (BSL.fromChunks res)
 
