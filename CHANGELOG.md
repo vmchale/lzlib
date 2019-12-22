@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.0.5
+
+  * `bracket` things better
+
 ## 0.3.0.4
 
   * Use `bracket` and fix space leak
