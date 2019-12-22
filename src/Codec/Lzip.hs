@@ -55,19 +55,26 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 decompress :: BSL.ByteString -> BSL.ByteString
 decompress bs = unsafeDupablePerformIO $ do
 
-    decoder <- lZDecompressOpen
-    maxSz <- lZDecompressWriteSize decoder
-
     let bss = BSL.toChunks bs
         -- TODO: this might be silly: does it force everything into memory
         -- prematurely?
         sz = maximum (BS.length <$> bss)
-        bufMax = fromIntegral maxSz
+
+    let setup = do
+            decoder <- lZDecompressOpen
+            maxSz <- lZDecompressWriteSize decoder
+            let bufMax = fromIntegral maxSz
+            buf <- mallocBytes sz
+            pure (decoder, buf, bufMax)
+
+    let cleanup (decoder, buf, _) =
+            lZDecompressClose decoder *>
+            free buf
 
     res <- bracket
-        (mallocBytes sz)
-        ((lZDecompressClose decoder *>) . free)
-        (\buf -> loop decoder bss bufMax (buf, sz) mempty)
+        setup
+        cleanup
+        (\(decoder, buf, bufMax) -> loop decoder bss bufMax (buf, sz) mempty)
 
     pure (BSL.fromChunks res)
 
@@ -115,14 +122,21 @@ compressWith level bstr = unsafeDupablePerformIO $ do
 
     let bss = BSL.toChunks bstr
         sz = fromIntegral (BSL.length bstr)
+        delta = sz `div` 4 + 64
 
-    encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+    let setup = do
+            encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+            newBytes <- mallocBytes delta
+            pure (encoder, newBytes)
 
-    let delta = sz `div` 4 + 64
+    let cleanup (encoder, newBytes) =
+            lZCompressClose encoder *>
+            free newBytes
+
     res <- bracket
-        (mallocBytes delta)
-        ((lZCompressClose encoder *>) . free)
-        (\newBytes -> loop encoder bss (newBytes, delta) 0 mempty)
+        setup
+        cleanup
+        (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0 mempty)
 
     pure (BSL.fromChunks res)
 
