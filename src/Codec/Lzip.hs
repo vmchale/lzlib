@@ -71,12 +71,10 @@ decompress bs = unsafeDupablePerformIO $ do
             lZDecompressClose decoder *>
             free buf
 
-    res <- bracket
+    BSL.fromChunks <$> bracket
         setup
         cleanup
         (\(decoder, buf, bufMax) -> loop decoder bss bufMax (buf, sz) mempty)
-
-    pure (BSL.fromChunks res)
 
     where
         loop :: LZDecoderPtr -> [BS.ByteString] -> Int -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
@@ -133,12 +131,10 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             lZCompressClose encoder *>
             free newBytes
 
-    res <- bracket
+    BSL.fromChunks <$> bracket
         setup
         cleanup
         (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0 mempty)
-
-    pure (BSL.fromChunks res)
 
     where
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
