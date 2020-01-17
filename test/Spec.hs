@@ -16,7 +16,7 @@ nonstandardRead fp = do
 
 compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 compressFileGeneral f fp = parallel $
-    it "roundtrip should be identity" $ do
+    it ("roundtrip should be identity (" ++ fp ++ ")") $ do
         str <- f fp
         decompress (compress str) `shouldBe` str
 
@@ -28,7 +28,7 @@ compressFile = compressFileGeneral BSL.readFile
 
 decompressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 decompressFileGeneral f fp = parallel $
-    it "roundtrip should be identity" $ do
+    it ("roundtrip should be identity (" ++ fp ++ ")") $ do
         str <- f fp
         compress (decompress str) `shouldBe` str
 
