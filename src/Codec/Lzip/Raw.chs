@@ -49,6 +49,8 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       , lZDecompressMemberPosition
                       , lZDecompressTotalInSize
                       , lZDecompressTotalOutSize
+                      -- * Macros
+                      , lZApiVersion
                       ) where
 
 import Foreign.C.Types
@@ -56,6 +58,10 @@ import Foreign.Ptr (Ptr)
 
 #include <stdint.h>
 #include <lzlib.h>
+
+-- | @since 0.3.1.0
+lZApiVersion :: Integral a => a
+lZApiVersion = {# const LZ_API_VERSION #}
 
 type UInt8 = {# type uint8_t #}
 {#typedef uint8_t UInt8#}
