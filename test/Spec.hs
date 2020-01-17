@@ -16,7 +16,7 @@ nonstandardRead fp = do
 
 compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 compressFileGeneral f fp = parallel $
-    it ("roundtrip should be identity (" ++ fp ++ ")") $ do
+    it ("decompress . compress should be identity (" ++ fp ++ ")") $ do
         str <- f fp
         decompress (compress str) `shouldBe` str
 
@@ -28,7 +28,7 @@ compressFile = compressFileGeneral BSL.readFile
 
 decompressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 decompressFileGeneral f fp = parallel $
-    it ("roundtrip should be identity (" ++ fp ++ ")") $ do
+    it ("compress . decompress should be identity (" ++ fp ++ ")") $ do
         str <- f fp
         compress (decompress str) `shouldBe` str
 
@@ -43,11 +43,11 @@ main = do
     ex' <- filterM doesFileExist ["gmp-6.1.2.tar.lz", "lzlib-1.10.tar.lz"]
     ex <- filterM doesFileExist ["gmp-6.1.2.tar", "lzlib-1.10.tar"]
     hspec $ do
-        describe "compress/decompress" $
+        describe "roundtrip" $
             traverse_ compressFile ex
-        describe "compress/decompress (sketchy)" $
+        describe "roundtrip (sketchy)" $
             traverse_ compressFileFreaky ex
-        describe "decompress/compress" $
+        describe "roundtrip" $
             traverse_ decompressFile ex'
-        describe "decompress/compress (sketchy)" $
+        describe "roundtrip (sketchy)" $
             traverse_ decompressFileFreaky ex'
