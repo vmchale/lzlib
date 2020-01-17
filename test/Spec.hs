@@ -50,4 +50,4 @@ main = do
         describe "decompress/compress" $
             traverse_ decompressFile ex'
         describe "decompress/compress (sketchy)" $
-            traverse_ decompressFileFreaky ex
+            traverse_ decompressFileFreaky ex'
