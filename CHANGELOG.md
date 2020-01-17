@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.1.0
+
+  * Export `lZApiVersion`
+
 ## 0.3.0.5
 
   * `bracket` things better
