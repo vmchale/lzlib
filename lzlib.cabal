@@ -3,7 +3,7 @@ name:               lzlib
 version:            0.3.1.1
 license:            BSD3
 license-file:       LICENSE
-copyright:          Copyright: (c) 2019 Vanessa McHale
+copyright:          Copyright: (c) 2019-2020 Vanessa McHale
 maintainer:         vamchale@gmail.com
 author:             Vanessa McHale
 synopsis:           lzlib bindings
