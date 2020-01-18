@@ -56,15 +56,13 @@ decompress :: BSL.ByteString -> BSL.ByteString
 decompress bs = unsafeDupablePerformIO $ do
 
     let bss = BSL.toChunks bs
-        -- TODO: this might be silly: does it force everything into memory
-        -- prematurely?
-        sz = maximum (BS.length <$> bss)
+        szOut = 32 * 1024
 
     let setup = do
             decoder <- lZDecompressOpen
             maxSz <- lZDecompressWriteSize decoder
             let bufMax = fromIntegral maxSz
-            buf <- mallocBytes sz
+            buf <- mallocBytes szOut
             pure (decoder, buf, bufMax)
 
     let cleanup (decoder, buf, _) =
@@ -74,7 +72,7 @@ decompress bs = unsafeDupablePerformIO $ do
     BSL.fromChunks <$> bracket
         setup
         cleanup
-        (\(decoder, buf, bufMax) -> loop decoder bss bufMax (buf, sz) mempty)
+        (\(decoder, buf, bufMax) -> loop decoder bss bufMax (buf, szOut) mempty)
 
     where
         loop :: LZDecoderPtr -> [BS.ByteString] -> Int -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
@@ -87,9 +85,9 @@ decompress bs = unsafeDupablePerformIO $ do
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> [rest]
                     else
                         BS.useAsCStringLen bs' $ \(bytes, sz) -> do
-                        void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
-                        void $ lZDecompressFinish decoder
-                        pure []
+                            void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
+                            void $ lZDecompressFinish decoder
+                            pure []
                 (bs':bss') -> if BS.length bs' > maxSz
                     then do
                         let (bs'', rest) = BS.splitAt maxSz bs'
