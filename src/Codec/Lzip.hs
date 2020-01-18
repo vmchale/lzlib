@@ -61,7 +61,7 @@ decompress bs = unsafeDupablePerformIO $ do
     let setup = do
             decoder <- lZDecompressOpen
             maxSz <- lZDecompressWriteSize decoder
-            let bufMax = fromIntegral maxSz
+            let bufMax = min (32 * 1024) (fromIntegral maxSz)
             buf <- mallocBytes szOut
             pure (decoder, buf, bufMax)
 
@@ -124,23 +124,21 @@ compressWith level bstr = unsafeDupablePerformIO $ do
 
     let setup = do
             encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
-            maxSz <- lZCompressWriteSize encoder
-            let bufMax = fromIntegral maxSz
             newBytes <- mallocBytes delta
-            pure (encoder, newBytes, bufMax)
+            pure (encoder, newBytes)
 
-    let cleanup (encoder, newBytes, _) =
+    let cleanup (encoder, newBytes) =
             lZCompressClose encoder *>
             free newBytes
 
     BSL.fromChunks <$> bracket
         setup
         cleanup
-        (\(encoder, newBytes, bufMax) -> loop encoder bss bufMax (newBytes, delta) 0 mempty)
+        (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0 mempty)
 
     where
-        loop :: LZEncoderPtr -> [BS.ByteString] -> Int -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
-        loop encoder bss bufMax (buf, sz) bytesRead acc = do
+        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
+        loop encoder bss (buf, sz) bytesRead acc = do
             bss' <- case bss of
                 [bs] -> BS.useAsCStringLen bs $ \(bytes, sz') -> do
                     void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
@@ -153,7 +151,7 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
                 then pure (acc ++ [bsActual])
-                else loop encoder bss' bufMax (buf, sz) (bytesRead + fromIntegral bytesActual) (acc ++ [bsActual])
+                else loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual) (acc ++ [bsActual])
 
         memberSize :: Int64
         memberSize = maxBound
