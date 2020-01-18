@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.1.1
+
+  * Bug fix + more sensible memory use
+
 ## 0.3.1.0
 
   * Export `lZApiVersion`
