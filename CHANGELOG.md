@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.1.2
+
+  * Hopefully improved performance
+
 ## 0.3.1.1
 
   * Bug fix + more sensible memory use
