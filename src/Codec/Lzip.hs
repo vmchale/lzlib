@@ -9,16 +9,17 @@ module Codec.Lzip ( compress
                   ) where
 
 import           Codec.Lzip.Raw
-import           Control.Exception     (bracket)
-import           Control.Monad         (void, when)
-import           Data.Bits             (shiftL)
-import qualified Data.ByteString       as BS
-import qualified Data.ByteString.Lazy  as BSL
-import           Data.Functor          (($>))
-import           Data.Int              (Int64)
-import           Foreign.Marshal.Alloc (free, mallocBytes)
-import           Foreign.Ptr           (Ptr, castPtr)
-import           System.IO.Unsafe      (unsafeDupablePerformIO)
+import           Control.Exception      (bracket)
+import           Control.Monad          (void, when)
+import           Data.Bits              (shiftL)
+import qualified Data.ByteString        as BS
+import qualified Data.ByteString.Lazy   as BSL
+import qualified Data.ByteString.Unsafe as BS
+import           Data.Functor           (($>))
+import           Data.Int               (Int64)
+import           Foreign.Marshal.Alloc  (free, mallocBytes)
+import           Foreign.Ptr            (Ptr, castPtr)
+import           System.IO.Unsafe       (unsafeDupablePerformIO)
 
 data CompressionLevel = Zero
                       | One
@@ -91,10 +92,10 @@ decompress bs = unsafeDupablePerformIO $ do
                 (bs':bss') -> if BS.length bs' > maxSz
                     then do
                         let (bs'', rest) = BS.splitAt maxSz bs'
-                        BS.useAsCStringLen bs'' $ \(bytes, sz) ->
+                        BS.unsafeUseAsCStringLen bs'' $ \(bytes, sz) ->
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> rest:bss'
                     else
-                        BS.useAsCStringLen bs' $ \(bytes, sz) ->
+                        BS.unsafeUseAsCStringLen bs' $ \(bytes, sz) ->
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $>
                             bss'
                 [] -> pure []
@@ -140,10 +141,10 @@ compressWith level bstr = unsafeDupablePerformIO $ do
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
         loop encoder bss (buf, sz) bytesRead acc = do
             bss' <- case bss of
-                [bs] -> BS.useAsCStringLen bs $ \(bytes, sz') -> do
+                [bs] -> BS.unsafeUseAsCStringLen bs $ \(bytes, sz') -> do
                     void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
                     lZCompressFinish encoder $> []
-                (bs:bss') -> BS.useAsCStringLen bs $ \(bytes, sz') ->
+                (bs:bss') -> BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
                     lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
                 [] -> pure []
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
