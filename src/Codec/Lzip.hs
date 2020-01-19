@@ -1,6 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 
 module Codec.Lzip ( compress
+                  , compressBest
+                  , compressFast
                   , compressWith
                   , decompress
                   , CompressionLevel (..)
@@ -110,10 +112,24 @@ decompress bs = unsafeDupablePerformIO $ do
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
                     loop decoder bss' maxSz (buf, bufSz) (acc ++ [bsActual])
 
--- | Defaults to 'Nine'
+-- | Defaults to 'Six'
 {-# NOINLINE compress #-}
 compress :: BSL.ByteString -> BSL.ByteString
-compress = compressWith Nine
+compress = compressWith Six
+
+-- | Alias for @'compressWith' 'Nine'@
+--
+-- @since 0.3.2.0
+{-# NOINLINE compressBest #-}
+compressBest :: BSL.ByteString -> BSL.ByteString
+compressBest = compressWith Nine
+
+-- | Alias for @'compressWith' 'Zero'@
+--
+-- @since 0.3.2.0
+{-# NOINLINE compressFast #-}
+compressFast :: BSL.ByteString -> BSL.ByteString
+compressFast = compressWith Zero
 
 {-# NOINLINE compressWith #-}
 compressWith :: CompressionLevel -> BSL.ByteString -> BSL.ByteString
