@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.2.0
+
+  * Add `compressBest` and `compressFast`
+
 ## 0.3.1.2
 
   * Hopefully improved performance
