@@ -1,1 +1,3 @@
+packages: ./
+
 max-backjumps: 40000
