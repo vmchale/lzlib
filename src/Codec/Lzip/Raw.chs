@@ -53,6 +53,7 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       , lZApiVersion
                       ) where
 
+import Control.Exception (Exception)
 import Foreign.C.Types
 import Foreign.Ptr (Ptr)
 
@@ -80,6 +81,8 @@ type UInt8 = {# type uint8_t #}
 
 instance Show LZErrno where
     show = lZStrerror
+
+instance Exception LZErrno where
 
 -- | Abstract data type
 data LZEncoder

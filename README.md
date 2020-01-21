@@ -17,6 +17,11 @@ Compared to the [lzip](http://hackage.haskell.org/package/lzip) Haskell library:
   * Uses `c2hs` instead of `hsc2hs`
   * Provides a high-level (`ByteString`-based) API
 
+### Performance
+
+Performance should be comparable to the
+[lzip](http://download.savannah.gnu.org/releases/lzip/) C++ program.
+
 ## Hacking
 
 Run
