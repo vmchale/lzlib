@@ -63,31 +63,30 @@ decompress bs = unsafeDupablePerformIO $ do
 
     let setup = do
             decoder <- lZDecompressOpen
-            maxSz <- lZDecompressWriteSize decoder
-            let bufMax = min (32 * 1024) (fromIntegral maxSz)
             buf <- mallocBytes szOut
-            pure (decoder, buf, bufMax)
+            pure (decoder, buf)
 
-    let cleanup (decoder, buf, _) =
+    let cleanup (decoder, buf) =
             lZDecompressClose decoder *>
             free buf
 
     BSL.fromChunks <$> bracket
         setup
         cleanup
-        (\(decoder, buf, bufMax) -> loop decoder bss bufMax (buf, szOut) mempty)
+        (\(decoder, buf) -> loop decoder bss (buf, szOut) mempty)
 
     where
-        loop :: LZDecoderPtr -> [BS.ByteString] -> Int -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
-        loop decoder bss maxSz (buf, bufSz) !acc = do
+        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
+        loop decoder bss (buf, bufSz) !acc = do
+            maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
                 [bs'] -> if BS.length bs' > maxSz
                     then do
                         let (bs'', rest) = BS.splitAt maxSz bs'
-                        BS.useAsCStringLen bs'' $ \(bytes, sz) ->
+                        BS.unsafeUseAsCStringLen bs'' $ \(bytes, sz) ->
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> [rest]
                     else
-                        BS.useAsCStringLen bs' $ \(bytes, sz) -> do
+                        BS.unsafeUseAsCStringLen bs' $ \(bytes, sz) -> do
                             void $ lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz)
                             void $ lZDecompressFinish decoder
                             pure []
@@ -110,7 +109,7 @@ decompress bs = unsafeDupablePerformIO $ do
                     when (bytesRead == -1) $
                         error . show =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    loop decoder bss' maxSz (buf, bufSz) (acc ++ [bsActual])
+                    loop decoder bss' (buf, bufSz) (acc ++ [bsActual])
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}
@@ -156,12 +155,26 @@ compressWith level bstr = unsafeDupablePerformIO $ do
     where
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
         loop encoder bss (buf, sz) bytesRead acc = do
+            maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
-                [bs] -> BS.unsafeUseAsCStringLen bs $ \(bytes, sz') -> do
-                    void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
-                    lZCompressFinish encoder $> []
-                (bs:bss') -> BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
-                    lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
+                [bs] -> if BS.length bs > maxSz
+                    then
+                        let (bs', rest) = BS.splitAt maxSz bs in
+                            BS.unsafeUseAsCStringLen bs' $ \(bytes, sz') -> do
+                                void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
+                                lZCompressFinish encoder $> [rest]
+                    else
+                        BS.unsafeUseAsCStringLen bs $ \(bytes, sz') -> do
+                            void $ lZCompressWrite encoder (castPtr bytes) (fromIntegral sz')
+                            lZCompressFinish encoder $> []
+                (bs:bss') -> if BS.length bs > maxSz
+                    then
+                        BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
+                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
+                    else
+                        let (bs', rest) = BS.splitAt maxSz bs in
+                        BS.unsafeUseAsCStringLen bs' $ \(bytes, sz') ->
+                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> (rest:bss')
                 [] -> pure []
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
             res <- lZCompressFinished encoder
