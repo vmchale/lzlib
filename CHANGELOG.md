@@ -3,6 +3,7 @@
 ## 0.3.3.0
 
   * Add `Exception` instance for `LZError`
+  * Bug fixes
 
 ## 0.3.2.0
 
