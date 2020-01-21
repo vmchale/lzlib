@@ -1,5 +1,9 @@
 # lzlib
 
+## 0.3.3.0
+
+  * Add `Exception` instance for `LZError`
+
 ## 0.3.2.0
 
   * Add `compressBest` and `compressFast`
