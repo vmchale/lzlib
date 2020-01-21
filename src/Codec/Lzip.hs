@@ -169,12 +169,12 @@ compressWith level bstr = unsafeDupablePerformIO $ do
                             lZCompressFinish encoder $> []
                 (bs:bss') -> if BS.length bs > maxSz
                     then
-                        BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
-                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
-                    else
                         let (bs', rest) = BS.splitAt maxSz bs in
                         BS.unsafeUseAsCStringLen bs' $ \(bytes, sz') ->
                             lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> (rest:bss')
+                    else
+                        BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
+                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
                 [] -> pure []
             bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
             res <- lZCompressFinished encoder
