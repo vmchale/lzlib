@@ -1,1 +1,2 @@
+- [ ] Fix space leak (?)
 - [ ] Fix `hstar` streaming - couldn't pack `ghc-8.8.2` dir in constant space?
