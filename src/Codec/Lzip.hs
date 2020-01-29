@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-
 module Codec.Lzip ( compress
                   , compressBest
                   , compressFast
@@ -24,19 +22,20 @@ import           Foreign.Ptr            (Ptr, castPtr)
 import           System.IO.Unsafe       (unsafeDupablePerformIO)
 
 data CompressionLevel = Zero
-                      | One
-                      | Two
-                      | Three
-                      | Four
-                      | Five
-                      | Six
-                      | Seven
-                      | Eight
-                      | Nine
+    | One
+    | Two
+    | Three
+    | Four
+    | Five
+    | Six
+    | Seven
+    | Eight
+    | Nine
 
-data LzOptions = LzOptions { _dictionarySize :: !Int
-                           , _matchLenLimit  :: !Int
-                           }
+data LzOptions = LzOptions
+    { _dictionarySize :: !Int
+    , _matchLenLimit  :: !Int
+    }
 
 encoderOptions :: CompressionLevel -> LzOptions
 encoderOptions Zero  = LzOptions 65535 16
@@ -73,11 +72,11 @@ decompress bs = unsafeDupablePerformIO $ do
     BSL.fromChunks <$> bracket
         setup
         cleanup
-        (\(decoder, buf) -> loop decoder bss (buf, szOut) mempty)
+        (\(decoder, buf) -> loop decoder bss (buf, szOut))
 
     where
-        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> [BS.ByteString] -> IO [BS.ByteString]
-        loop decoder bss (buf, bufSz) !acc = do
+        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
+        loop decoder bss (buf, bufSz) = do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
                 [bs'] -> if BS.length bs' > maxSz
@@ -103,13 +102,13 @@ decompress bs = unsafeDupablePerformIO $ do
 
             res <- lZDecompressFinished decoder
             if res == 1
-                then pure acc
+                then pure [] -- acc
                 else do
                     bytesRead <- lZDecompressRead decoder buf (fromIntegral bufSz)
                     when (bytesRead == -1) $
                         error . show =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    loop decoder bss' (buf, bufSz) (acc ++ [bsActual])
+                    (bsActual:) <$> loop decoder bss' (buf, bufSz)
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}
@@ -150,11 +149,11 @@ compressWith level bstr = unsafeDupablePerformIO $ do
     BSL.fromChunks <$> bracket
         setup
         cleanup
-        (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0 mempty)
+        (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0)
 
     where
-        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> [BS.ByteString] -> IO [BS.ByteString]
-        loop encoder bss (buf, sz) bytesRead acc = do
+        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> IO [BS.ByteString]
+        loop encoder bss (buf, sz) bytesRead = do
             maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
                 [bs] -> if BS.length bs > maxSz
@@ -180,8 +179,8 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             res <- lZCompressFinished encoder
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
-                then pure (acc ++ [bsActual])
-                else loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual) (acc ++ [bsActual])
+                then pure [bsActual]
+                else (bsActual:) <$> loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual)
 
         memberSize :: Int64
         memberSize = maxBound
