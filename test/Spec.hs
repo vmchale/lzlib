@@ -45,9 +45,9 @@ main = do
     hspec $ do
         describe "roundtrip" $
             traverse_ compressFile ex
-        describe "roundtrip (sketchy)" $
-            traverse_ compressFileFreaky ex
         describe "roundtrip" $
             traverse_ decompressFile ex'
+        describe "roundtrip (sketchy)" $
+            traverse_ compressFileFreaky ex
         describe "roundtrip (sketchy)" $
             traverse_ decompressFileFreaky ex'
