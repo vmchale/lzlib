@@ -102,7 +102,7 @@ decompress bs = unsafeDupablePerformIO $ do
 
             res <- lZDecompressFinished decoder
             if res == 1
-                then pure [] -- acc
+                then pure []
                 else do
                     bytesRead <- lZDecompressRead decoder buf (fromIntegral bufSz)
                     when (bytesRead == -1) $
