@@ -1,5 +1,7 @@
 # lzlib
 
+  * Nicer loops
+
 ## 0.3.3.0
 
   * Add `Exception` instance for `LZError`
