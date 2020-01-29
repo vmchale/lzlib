@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+cabal build lzlib-test --enable-profiling
+"$(fd '^lzlib-test$' -t x -I)" +RTS -h
+hp2pretty lzlib-test.hp
+open lzlib-test.svg
