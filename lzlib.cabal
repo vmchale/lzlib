@@ -107,3 +107,19 @@ benchmark lzlib-bench
 
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
+
+benchmark lzlib-mem
+    type: exitcode-stdio-1.0
+    main-is: Mem.hs
+    hs-source-dirs: mem
+    default-language: Haskell2010
+    ghc-options: -Wall
+    build-depends:
+        base -any,
+        lzlib -any,
+        filepath -any,
+        temporary -any,
+        bytestring -any
+
+    if impl(ghc >=8.0)
+        ghc-options: -Wincomplete-uni-patterns -Wincomplete-record-updates

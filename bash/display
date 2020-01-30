@@ -2,7 +2,7 @@
 
 set -e
 
-cabal build lzlib-test --enable-profiling
-"$(fd '^lzlib-test$' -t x -I)" +RTS -h
-hp2pretty lzlib-test.hp
-open lzlib-test.svg
+cabal build lzlib-mem --enable-profiling -w ghc-8.8.2
+"$(fd '^lzlib-mem$' -t x -I)" +RTS -h
+hp2pretty lzlib-mem.hp
+open lzlib-mem.svg
