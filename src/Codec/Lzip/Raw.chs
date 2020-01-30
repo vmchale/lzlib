@@ -87,10 +87,10 @@ instance Exception LZErrno where
 -- | Abstract data type
 data LZEncoder
 
-{# pointer *LZ_Encoder as LZEncoderPtr -> LZEncoder #}
+{# pointer *LZ_Encoder as LZEncoderPtr foreign finalizer LZ_compress_close as ^ -> LZEncoder #}
 
-{# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `LZEncoderPtr' #}
-{# fun LZ_compress_close as ^ { `LZEncoderPtr' } -> `CInt' #}
+{# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `Ptr LZEncoder' id #}
+-- {# fun LZ_compress_close as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_restart_member as ^ { `LZEncoderPtr', id `CULLong' } -> `CInt' #}
 {# fun LZ_compress_sync_flush as ^ { `LZEncoderPtr' } -> `CInt' #}

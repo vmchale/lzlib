@@ -17,7 +17,8 @@ import qualified Data.ByteString.Lazy   as BSL
 import qualified Data.ByteString.Unsafe as BS
 import           Data.Functor           (($>))
 import           Data.Int               (Int64)
-import           Foreign.ForeignPtr     (mallocForeignPtrBytes, withForeignPtr)
+import           Foreign.ForeignPtr     (castForeignPtr, mallocForeignPtrBytes,
+                                         newForeignPtr, withForeignPtr)
 import           Foreign.Ptr            (Ptr, castPtr)
 import           System.IO.Unsafe       (unsafeDupablePerformIO)
 
@@ -132,15 +133,11 @@ compressWith level bstr = unsafeDupablePerformIO $ do
         delta = sz `div` 4 + 64
 
     buf <- mallocForeignPtrBytes delta
-    withForeignPtr buf $ \newBytes ->
+    withForeignPtr buf $ \newBytes -> do
 
-        let setup = lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
-        in
-
-        BSL.fromChunks <$> bracket
-            setup
-            lZCompressClose
-            (\encoder -> loop encoder bss (newBytes, delta) 0)
+        encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+        enc <- newForeignPtr lZCompressClose (castPtr encoder)
+        BSL.fromChunks <$> loop (castForeignPtr enc) bss (newBytes, delta) 0
 
     where
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> IO [BS.ByteString]
