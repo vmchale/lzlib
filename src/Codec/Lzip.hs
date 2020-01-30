@@ -17,7 +17,7 @@ import qualified Data.ByteString.Lazy   as BSL
 import qualified Data.ByteString.Unsafe as BS
 import           Data.Functor           (($>))
 import           Data.Int               (Int64)
-import           Foreign.Marshal.Alloc  (free, mallocBytes)
+import           Foreign.ForeignPtr     (mallocForeignPtrBytes, withForeignPtr)
 import           Foreign.Ptr            (Ptr, castPtr)
 import           System.IO.Unsafe       (unsafeDupablePerformIO)
 
@@ -60,19 +60,13 @@ decompress bs = unsafeDupablePerformIO $ do
     let bss = BSL.toChunks bs
         szOut = 32 * 1024
 
-    let setup = do
-            decoder <- lZDecompressOpen
-            buf <- mallocBytes szOut
-            pure (decoder, buf)
+    bufOut <- mallocForeignPtrBytes szOut
+    withForeignPtr bufOut $ \buf ->
 
-    let cleanup (decoder, buf) =
-            lZDecompressClose decoder *>
-            free buf
-
-    BSL.fromChunks <$> bracket
-        setup
-        cleanup
-        (\(decoder, buf) -> loop decoder bss (buf, szOut))
+        BSL.fromChunks <$> bracket
+            lZDecompressOpen
+            lZDecompressClose
+            (\decoder -> loop decoder bss (buf, szOut))
 
     where
         loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
@@ -137,19 +131,16 @@ compressWith level bstr = unsafeDupablePerformIO $ do
         sz = fromIntegral (BSL.length bstr)
         delta = sz `div` 4 + 64
 
-    let setup = do
-            encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
-            newBytes <- mallocBytes delta
-            pure (encoder, newBytes)
+    buf <- mallocForeignPtrBytes delta
+    withForeignPtr buf $ \newBytes ->
 
-    let cleanup (encoder, newBytes) =
-            lZCompressClose encoder *>
-            free newBytes
+        let setup = lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+        in
 
-    BSL.fromChunks <$> bracket
-        setup
-        cleanup
-        (\(encoder, newBytes) -> loop encoder bss (newBytes, delta) 0)
+        BSL.fromChunks <$> bracket
+            setup
+            lZCompressClose
+            (\encoder -> loop encoder bss (newBytes, delta) 0)
 
     where
         loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> IO [BS.ByteString]
