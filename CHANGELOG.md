@@ -2,6 +2,7 @@
 
   * Nicer loops
   * Support older GHCs
+  * Use `ForeignPtr` internally in some places
 
 ## 0.3.3.0
 
