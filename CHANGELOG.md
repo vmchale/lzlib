@@ -1,6 +1,7 @@
 # lzlib
 
   * Nicer loops
+  * Support older GHCs
 
 ## 0.3.3.0
 
