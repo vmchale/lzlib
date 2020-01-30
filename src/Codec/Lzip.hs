@@ -20,7 +20,8 @@ import           Data.Int               (Int64)
 import           Foreign.ForeignPtr     (castForeignPtr, mallocForeignPtrBytes,
                                          newForeignPtr, withForeignPtr)
 import           Foreign.Ptr            (Ptr, castPtr)
-import           System.IO.Unsafe       (unsafeDupablePerformIO)
+import           System.IO.Unsafe       (unsafeDupablePerformIO,
+                                         unsafeInterleaveIO)
 
 data CompressionLevel = Zero
     | One
@@ -62,12 +63,11 @@ decompress bs = unsafeDupablePerformIO $ do
         szOut = 32 * 1024
 
     bufOut <- mallocForeignPtrBytes szOut
-    withForeignPtr bufOut $ \buf ->
+    withForeignPtr bufOut $ \buf -> do
 
-        BSL.fromChunks <$> bracket
-            lZDecompressOpen
-            lZDecompressClose
-            (\decoder -> loop decoder bss (buf, szOut))
+        decoder <- lZDecompressOpen
+        dec <- newForeignPtr lZDecompressClose (castPtr decoder)
+        BSL.fromChunks <$> loop (castForeignPtr dec) bss (buf, szOut)
 
     where
         loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
@@ -103,7 +103,7 @@ decompress bs = unsafeDupablePerformIO $ do
                     when (bytesRead == -1) $
                         error . show =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    (bsActual:) <$> loop decoder bss' (buf, bufSz)
+                    (bsActual:) <$> unsafeInterleaveIO (loop decoder bss' (buf, bufSz))
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}

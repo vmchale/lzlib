@@ -108,10 +108,10 @@ data LZEncoder
 -- | Abstract data type
 data LZDecoder
 
-{# pointer *LZ_Decoder as LZDecoderPtr -> LZDecoder #}
+{# pointer *LZ_Decoder as LZDecoderPtr foreign finalizer LZ_decompress_close as ^ -> LZDecoder #}
 
-{# fun LZ_decompress_open as ^ {} -> `LZDecoderPtr' #}
-{# fun LZ_decompress_close as ^ { `LZDecoderPtr' } -> `CInt' #}
+{# fun LZ_decompress_open as ^ {} -> `Ptr LZDecoder' id #}
+-- {# fun LZ_decompress_close as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_reset as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_sync_to_member as ^ { `LZDecoderPtr' } -> `CInt' #}
