@@ -58,7 +58,7 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- Doesn't work on empty 'BSL.ByteString's
 {-# NOINLINE decompress #-}
 decompress :: BSL.ByteString -> BSL.ByteString
-decompress bs = unsafePerformIO $ do
+decompress bs = unsafeDupablePerformIO $ do
 
     let bss = BSL.toChunks bs
         szOut :: Integral a => a
