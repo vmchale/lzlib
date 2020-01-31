@@ -1,18 +1,14 @@
 module Main ( main ) where
 
 import           Codec.Lzip
-import           Control.Monad        (filterM)
-import qualified Data.ByteString      as BS
-import qualified Data.ByteString.Lazy as BSL
-import           Data.Foldable        (traverse_)
-import           System.Directory     (doesFileExist)
+import           Control.Applicative
+import           Control.Monad                (filterM)
+import qualified Data.ByteString              as BS
+import qualified Data.ByteString.Lazy         as BSL
+import           Data.ByteString.Pathological (nonstandardRead)
+import           Data.Foldable                (traverse_)
+import           System.Directory             (doesFileExist)
 import           Test.Hspec
-
-nonstandardRead :: FilePath -> IO BSL.ByteString
-nonstandardRead fp = do
-    bStrict <- BS.readFile fp
-    let (h, t) = BS.splitAt (64 * 1024) bStrict
-    pure $ BSL.fromChunks [h, t]
 
 compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 compressFileGeneral f fp = parallel $
