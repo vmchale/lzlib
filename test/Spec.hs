@@ -3,7 +3,6 @@ module Main ( main ) where
 import           Codec.Lzip
 import           Control.Applicative
 import           Control.Monad                (filterM)
-import qualified Data.ByteString              as BS
 import qualified Data.ByteString.Lazy         as BSL
 import           Data.ByteString.Pathological (nonstandardRead)
 import           Data.Foldable                (traverse_)
