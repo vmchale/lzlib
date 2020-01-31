@@ -18,6 +18,7 @@ import qualified Data.ByteString.Lazy   as BSL
 import qualified Data.ByteString.Unsafe as BS
 import           Data.Functor           (($>))
 import           Data.Int               (Int64)
+import           Foreign.C.Types        (CInt)
 import           Foreign.ForeignPtr     (castForeignPtr, mallocForeignPtrBytes,
                                          newForeignPtr, withForeignPtr)
 import           Foreign.Ptr            (Ptr, castPtr)
@@ -60,6 +61,7 @@ decompress :: BSL.ByteString -> BSL.ByteString
 decompress bs = unsafePerformIO $ do
 
     let bss = BSL.toChunks bs
+        szOut :: Integral a => a
         szOut = 32 * 1024
 
     bufOut <- mallocForeignPtrBytes szOut
@@ -70,7 +72,7 @@ decompress bs = unsafePerformIO $ do
         BSL.fromChunks <$> loop (castForeignPtr dec) bss (buf, szOut)
 
     where
-        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
+        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, CInt) -> IO [BS.ByteString]
         loop decoder bss (buf, bufSz) = do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
@@ -98,7 +100,7 @@ decompress bs = unsafePerformIO $ do
             if res == 1
                 then pure []
                 else do
-                    bytesRead <- lZDecompressRead decoder buf (fromIntegral bufSz)
+                    bytesRead <- lZDecompressRead decoder buf bufSz
                     when (bytesRead == -1) $
                         throw =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
