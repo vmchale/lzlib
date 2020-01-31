@@ -168,7 +168,7 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
                 then pure [bsActual]
-                else (bsActual:) <$> loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual)
+                else (bsActual:) <$> unsafeInterleaveIO (loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual))
 
         memberSize :: Int64
         memberSize = maxBound
