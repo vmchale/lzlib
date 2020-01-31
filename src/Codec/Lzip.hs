@@ -10,6 +10,7 @@ module Codec.Lzip ( compress
 
 import           Codec.Lzip.Raw
 import           Control.Applicative
+import           Control.Exception      (throw)
 import           Control.Monad          (void, when)
 import           Data.Bits              (shiftL)
 import qualified Data.ByteString        as BS
@@ -100,7 +101,7 @@ decompress bs = unsafeDupablePerformIO $ do
                 else do
                     bytesRead <- lZDecompressRead decoder buf (fromIntegral bufSz)
                     when (bytesRead == -1) $
-                        error . show =<< lZDecompressErrno decoder
+                        throw =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
                     (bsActual:) <$> loop decoder bss' (buf, bufSz)
 
