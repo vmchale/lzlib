@@ -75,8 +75,8 @@ decompress bs = unsafePerformIO $ do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
                 [bs'] -> if BS.length bs' > maxSz
-                    then do
-                        let (bs'', rest) = BS.splitAt maxSz bs'
+                    then
+                        let (bs'', rest) = BS.splitAt maxSz bs' in
                         BS.unsafeUseAsCStringLen bs'' $ \(bytes, sz) ->
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> [rest]
                     else
@@ -84,8 +84,8 @@ decompress bs = unsafePerformIO $ do
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) *>
                             lZDecompressFinish decoder $> []
                 (bs':bss') -> if BS.length bs' > maxSz
-                    then do
-                        let (bs'', rest) = BS.splitAt maxSz bs'
+                    then
+                        let (bs'', rest) = BS.splitAt maxSz bs' in
                         BS.unsafeUseAsCStringLen bs'' $ \(bytes, sz) ->
                             lZDecompressWrite decoder (castPtr bytes) (fromIntegral sz) $> rest:bss'
                     else
