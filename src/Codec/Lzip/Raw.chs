@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveDataTypeable #-}
+
 -- | Consult the lzlib [documentation](https://www.nongnu.org/lzip/manual/lzlib_manual.html)
 -- for more details
 module Codec.Lzip.Raw ( -- * Prolegomena
@@ -54,6 +56,7 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       ) where
 
 import Control.Exception (Exception)
+import Data.Typeable (Typeable)
 import Foreign.C.Types
 import Foreign.Ptr (Ptr)
 
@@ -68,7 +71,7 @@ type UInt8 = {# type uint8_t #}
 {#typedef uint8_t UInt8#}
 {#default in `Ptr UInt8' [uint8_t *] id#}
 
-{# enum LZ_Errno as LZErrno {underscoreToCase} deriving (Eq) #}
+{# enum LZ_Errno as LZErrno {underscoreToCase} deriving (Eq, Typeable) #}
 
 {# fun pure LZ_version as ^ {} -> `String' #}
 {# fun pure LZ_strerror as ^ { `LZErrno' } -> `String' #}
