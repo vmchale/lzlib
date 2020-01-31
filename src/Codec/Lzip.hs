@@ -9,6 +9,7 @@ module Codec.Lzip ( compress
                   ) where
 
 import           Codec.Lzip.Raw
+import           Control.Applicative
 import           Control.Monad          (void, when)
 import           Data.Bits              (shiftL)
 import qualified Data.ByteString        as BS
@@ -19,8 +20,7 @@ import           Data.Int               (Int64)
 import           Foreign.ForeignPtr     (castForeignPtr, mallocForeignPtrBytes,
                                          newForeignPtr, withForeignPtr)
 import           Foreign.Ptr            (Ptr, castPtr)
-import           System.IO.Unsafe       (unsafeDupablePerformIO,
-                                         unsafeInterleaveIO, unsafePerformIO)
+import           System.IO.Unsafe
 
 data CompressionLevel = Zero
     | One
@@ -56,7 +56,7 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- Doesn't work on empty 'BSL.ByteString's
 {-# NOINLINE decompress #-}
 decompress :: BSL.ByteString -> BSL.ByteString
-decompress bs = unsafePerformIO $ do
+decompress bs = unsafeDupablePerformIO $ do
 
     let bss = BSL.toChunks bs
         szOut = 32 * 1024
@@ -102,7 +102,7 @@ decompress bs = unsafePerformIO $ do
                     when (bytesRead == -1) $
                         error . show =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    (bsActual:) <$> unsafeInterleaveIO (loop decoder bss' (buf, bufSz))
+                    (bsActual:) <$> loop decoder bss' (buf, bufSz)
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}
