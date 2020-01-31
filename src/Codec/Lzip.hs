@@ -57,7 +57,7 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- Doesn't work on empty 'BSL.ByteString's
 {-# NOINLINE decompress #-}
 decompress :: BSL.ByteString -> BSL.ByteString
-decompress bs = unsafeDupablePerformIO $ do
+decompress bs = unsafePerformIO $ do
 
     let bss = BSL.toChunks bs
         szOut = 32 * 1024
@@ -103,7 +103,7 @@ decompress bs = unsafeDupablePerformIO $ do
                     when (bytesRead == -1) $
                         throw =<< lZDecompressErrno decoder
                     bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    (bsActual:) <$> loop decoder bss' (buf, bufSz)
+                    (bsActual:) <$> unsafeInterleaveIO (loop decoder bss' (buf, bufSz))
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}
