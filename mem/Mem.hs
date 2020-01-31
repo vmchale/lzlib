@@ -7,8 +7,8 @@ import           System.IO.Temp       (withSystemTempDirectory)
 
 main :: IO ()
 main =
-    decompressDump *>
-    compressDump
+    compressDump *>
+    decompressDump
 
 decompressDump :: IO ()
 decompressDump = withSystemTempDirectory "lz" $
