@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module Codec.Lzip ( compress
                   , compressBest
                   , compressFast
@@ -10,18 +12,22 @@ module Codec.Lzip ( compress
 
 import           Codec.Lzip.Raw
 import           Control.Applicative
-import           Control.Exception      (throw)
-import           Control.Monad          (when)
-import           Data.Bits              (shiftL)
-import qualified Data.ByteString        as BS
-import qualified Data.ByteString.Lazy   as BSL
-import qualified Data.ByteString.Unsafe as BS
-import           Data.Functor           (($>))
-import           Data.Int               (Int64)
-import           Foreign.C.Types        (CInt)
-import           Foreign.ForeignPtr     (castForeignPtr, mallocForeignPtrBytes,
-                                         newForeignPtr, withForeignPtr)
-import           Foreign.Ptr            (Ptr, castPtr)
+import           Control.Exception            (throw)
+import           Control.Monad                (when)
+import           Control.Monad.ST.Lazy        (ST, runST, stToIO,
+                                               strictToLazyST)
+import qualified Control.Monad.ST.Lazy.Unsafe as LazyST
+import           Data.Bits                    (shiftL)
+import qualified Data.ByteString              as BS
+import qualified Data.ByteString.Lazy         as BSL
+import qualified Data.ByteString.Unsafe       as BS
+import           Data.Functor                 (($>))
+import           Data.Int                     (Int64)
+import           Foreign.C.Types              (CInt)
+import           Foreign.ForeignPtr           (ForeignPtr, castForeignPtr,
+                                               mallocForeignPtrBytes,
+                                               newForeignPtr, withForeignPtr)
+import           Foreign.Ptr                  (Ptr, castPtr)
 import           System.IO.Unsafe
 
 data CompressionLevel = Zero
@@ -58,22 +64,25 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- Doesn't work on empty 'BSL.ByteString's
 {-# NOINLINE decompress #-}
 decompress :: BSL.ByteString -> BSL.ByteString
-decompress bs = unsafeDupablePerformIO $ do
+decompress bs = runST $ do
 
     let bss = BSL.toChunks bs
         szOut :: Integral a => a
         szOut = 32 * 1024
 
-    bufOut <- mallocForeignPtrBytes szOut
-    withForeignPtr bufOut $ \buf -> do
-
+    (dec, bufOut) <- LazyST.unsafeIOToST $ do
+        bufOut <- mallocForeignPtrBytes szOut
         decoder <- lZDecompressOpen
         dec <- newForeignPtr lZDecompressClose (castPtr decoder)
-        BSL.fromChunks <$> loop (castForeignPtr dec) bss (buf, szOut)
+        pure (dec, bufOut)
+
+    BSL.fromChunks <$> loop (castForeignPtr dec) bss (bufOut, szOut)
 
     where
-        loop :: LZDecoderPtr -> [BS.ByteString] -> (Ptr UInt8, CInt) -> IO [BS.ByteString]
-        loop decoder bss (buf, bufSz) = do
+
+        -- TODO: fix this loop?
+        step :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> ST s (Maybe BS.ByteString, [BS.ByteString])
+        step decoder bss (buf, bufSz) = LazyST.unsafeIOToST $ do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
                 [bs'] -> if BS.length bs' > maxSz
@@ -98,13 +107,20 @@ decompress bs = unsafeDupablePerformIO $ do
 
             res <- lZDecompressFinished decoder
             if res == 1
-                then pure []
-                else do
-                    bytesRead <- lZDecompressRead decoder buf bufSz
-                    when (bytesRead == -1) $
-                        throw =<< lZDecompressErrno decoder
-                    bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesRead)
-                    (bsActual:) <$> unsafeInterleaveIO (loop decoder bss' (buf, bufSz))
+                then pure (Nothing, bss')
+                else
+                    withForeignPtr buf $ \b -> do
+                        bytesRead <- lZDecompressRead decoder b bufSz
+                        when (bytesRead == -1) $
+                            throw =<< lZDecompressErrno decoder
+                        (, bss') . Just <$> BS.packCStringLen (castPtr b, fromIntegral bytesRead)
+
+        loop :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> ST s [BS.ByteString]
+        loop decoder bss bufOut = do
+            (res, bss') <- step decoder bss bufOut
+            case res of
+                Nothing -> pure []
+                Just x  -> (x:) <$> loop decoder bss' bufOut
 
 -- | Defaults to 'Six'
 {-# NOINLINE compress #-}
@@ -169,7 +185,7 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
                 then pure [bsActual]
-                else (bsActual:) <$> unsafeInterleaveIO (loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual))
+                else (bsActual:) <$> loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual)
 
         memberSize :: Int64
         memberSize = maxBound
