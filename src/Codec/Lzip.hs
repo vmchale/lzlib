@@ -153,11 +153,11 @@ compressWith level bstr = unsafeDupablePerformIO $ do
 
         encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
         enc <- newForeignPtr lZCompressClose (castPtr encoder)
-        BSL.fromChunks <$> loop (castForeignPtr enc) bss (newBytes, delta) 0
+        BSL.fromChunks <$> loop (castForeignPtr enc) bss (newBytes, delta)
 
     where
-        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> Int -> IO [BS.ByteString]
-        loop encoder bss (buf, sz) bytesRead = do
+        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
+        loop encoder bss (buf, sz) = do
             maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
                 [bs] -> if BS.length bs > maxSz
@@ -184,7 +184,7 @@ compressWith level bstr = unsafeDupablePerformIO $ do
             bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
             if res == 1
                 then pure [bsActual]
-                else (bsActual:) <$> loop encoder bss' (buf, sz) (bytesRead + fromIntegral bytesActual)
+                else (bsActual:) <$> loop encoder bss' (buf, sz)
 
         memberSize :: Int64
         memberSize = maxBound
