@@ -27,8 +27,7 @@ import           Foreign.C.Types              (CInt)
 import           Foreign.ForeignPtr           (ForeignPtr, castForeignPtr,
                                                mallocForeignPtrBytes,
                                                newForeignPtr, withForeignPtr)
-import           Foreign.Ptr                  (Ptr, castPtr)
-import           System.IO.Unsafe
+import           Foreign.Ptr                  (castPtr)
 
 data CompressionLevel = Zero
     | One
