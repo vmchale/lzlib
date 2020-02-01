@@ -14,8 +14,8 @@ import           Codec.Lzip.Raw
 import           Control.Applicative
 import           Control.Exception            (throw)
 import           Control.Monad                (when)
-import           Control.Monad.ST.Lazy        (ST, runST, stToIO,
-                                               strictToLazyST)
+import           Control.Monad.ST.Lazy        (runST)
+import qualified Control.Monad.ST.Lazy        as LazyST
 import qualified Control.Monad.ST.Lazy.Unsafe as LazyST
 import           Data.Bits                    (shiftL)
 import qualified Data.ByteString              as BS
@@ -62,7 +62,6 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- [lziprecover](https://www.nongnu.org/lzip/lziprecover.html).
 --
 -- Doesn't work on empty 'BSL.ByteString's
-{-# NOINLINE decompress #-}
 decompress :: BSL.ByteString -> BSL.ByteString
 decompress bs = runST $ do
 
@@ -80,8 +79,8 @@ decompress bs = runST $ do
 
     where
 
-        -- TODO: fix this loop?
-        step :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> ST s (Maybe BS.ByteString, [BS.ByteString])
+        -- TODO: not a fan of this loop!
+        step :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> LazyST.ST s (Maybe BS.ByteString, [BS.ByteString])
         step decoder bss (buf, bufSz) = LazyST.unsafeIOToST $ do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
@@ -115,7 +114,7 @@ decompress bs = runST $ do
                             throw =<< lZDecompressErrno decoder
                         (, bss') . Just <$> BS.packCStringLen (castPtr b, fromIntegral bytesRead)
 
-        loop :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> ST s [BS.ByteString]
+        loop :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> LazyST.ST s [BS.ByteString]
         loop decoder bss bufOut = do
             (res, bss') <- step decoder bss bufOut
             case res of
