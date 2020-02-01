@@ -49,10 +49,10 @@ library
     c-sources:        cbits/lzlib.c
     hs-source-dirs:   src
     default-language: Haskell2010
+    other-extensions: DeriveDataTypeable TupleSections
     include-dirs:     cbits
     install-includes: cbits/lzlib.h
     ghc-options:      -Wall
-    other-extensions: DeriveDataTypeable
     build-depends:
         base >=4.7 && <5,
         bytestring -any
@@ -73,14 +73,13 @@ test-suite lzlib-test
     main-is:          Spec.hs
     hs-source-dirs:   test
     default-language: Haskell2010
-    -- ghc-options:      -threaded -rtsopts -with-rtsopts=-N -Wall
     build-depends:
         base -any,
         lzlib -any,
         hspec -any,
         bytestring -any,
         directory -any,
-        pathological-bytestrings
+        pathological-bytestrings -any
 
     if impl(ghc >=8.0)
         ghc-options:
@@ -111,11 +110,11 @@ benchmark lzlib-bench
         ghc-options: -Wmissing-export-lists
 
 benchmark lzlib-mem
-    type: exitcode-stdio-1.0
-    main-is: Mem.hs
-    hs-source-dirs: mem
+    type:             exitcode-stdio-1.0
+    main-is:          Mem.hs
+    hs-source-dirs:   mem
     default-language: Haskell2010
-    ghc-options: -Wall
+    ghc-options:      -Wall
     build-depends:
         base -any,
         lzlib -any,
