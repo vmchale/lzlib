@@ -105,7 +105,7 @@ decompress bs = runST $ do
 
             res <- lZDecompressFinished decoder
             if res == 1
-                then pure (Nothing, bss')
+                then pure (Nothing, error "Internal error in lzlib-hs")
                 else
                     withForeignPtr buf $ \b -> do
                         bytesRead <- lZDecompressRead decoder b bufSz
@@ -181,7 +181,7 @@ compressWith level bstr = runST $ do
                 res <- lZCompressFinished encoder
                 bsActual <- BS.packCStringLen (castPtr b, fromIntegral bytesActual)
                 if res == 1
-                    then pure (True, bsActual, bss')
+                    then pure (True, bsActual, error "Internal error in lzlib-hs")
                     else pure (False, bsActual, bss')
 
         loop :: LZEncoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, Int) -> LazyST.ST s [BS.ByteString]
