@@ -121,39 +121,42 @@ decompress bs = runST $ do
                 Just x  -> (x:) <$> loop decoder bss' bufOut
 
 -- | Defaults to 'Six'
+{-# NOINLINE compress #-}
 compress :: BSL.ByteString -> BSL.ByteString
 compress = compressWith Six
 
 -- | Alias for @'compressWith' 'Nine'@
 --
 -- @since 0.3.2.0
+{-# NOINLINE compressBest #-}
 compressBest :: BSL.ByteString -> BSL.ByteString
 compressBest = compressWith Nine
 
 -- | Alias for @'compressWith' 'Zero'@
 --
 -- @since 0.3.2.0
+{-# NOINLINE compressFast #-}
 compressFast :: BSL.ByteString -> BSL.ByteString
 compressFast = compressWith Zero
 
+{-# NOINLINE compressWith #-}
 compressWith :: CompressionLevel -> BSL.ByteString -> BSL.ByteString
-compressWith level bstr = runST $ do
+compressWith level bstr = unsafeDupablePerformIO $ do
 
     let bss = BSL.toChunks bstr
         sz = fromIntegral (BSL.length bstr)
         delta = sz `div` 4 + 64
 
-    (buf, enc) <- LazyST.unsafeIOToST $ do
-        buf <- mallocForeignPtrBytes delta
+    buf <- mallocForeignPtrBytes delta
+    withForeignPtr buf $ \newBytes -> do
+
         encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
         enc <- newForeignPtr lZCompressClose (castPtr encoder)
-        pure (buf, enc)
-
-    BSL.fromChunks <$> loop (castForeignPtr enc) bss (buf, delta)
+        BSL.fromChunks <$> loop (castForeignPtr enc) bss (newBytes, delta)
 
     where
-        step :: LZEncoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, Int) -> LazyST.ST s (Bool, BS.ByteString, [BS.ByteString])
-        step encoder bss (buf, sz) = LazyST.unsafeIOToST $ do
+        loop :: LZEncoderPtr -> [BS.ByteString] -> (Ptr UInt8, Int) -> IO [BS.ByteString]
+        loop encoder bss (buf, sz) = do
             maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
                 [bs] -> if BS.length bs > maxSz
@@ -175,22 +178,12 @@ compressWith level bstr = runST $ do
                         BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
                             lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
                 [] -> pure []
-
-            withForeignPtr buf $ \b -> do
-                bytesActual <- lZCompressRead encoder b (fromIntegral sz)
-                res <- lZCompressFinished encoder
-                bsActual <- BS.packCStringLen (castPtr b, fromIntegral bytesActual)
-                if res == 1
-                    then pure (True, bsActual, bss')
-                    else pure (False, bsActual, bss')
-
-        loop :: LZEncoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, Int) -> LazyST.ST s [BS.ByteString]
-        loop encoder bss bufOut = do
-
-            (stop, res, bss') <- step encoder bss bufOut
-            if stop
-                then pure [res]
-                else (res:) <$> loop encoder bss' bufOut
+            bytesActual <- lZCompressRead encoder buf (fromIntegral sz)
+            res <- lZCompressFinished encoder
+            bsActual <- BS.packCStringLen (castPtr buf, fromIntegral bytesActual)
+            if res == 1
+                then pure [bsActual]
+                else (bsActual:) <$> loop encoder bss' (buf, sz)
 
         memberSize :: Int64
         memberSize = maxBound
