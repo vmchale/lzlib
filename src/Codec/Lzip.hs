@@ -8,6 +8,9 @@ module Codec.Lzip ( compress
                   , decompress
                   , compressFile
                   , CompressionLevel (..)
+                  -- * Miscellany
+                  , lZVersion
+                  , lZApiVersion
                   ) where
 
 import           Codec.Lzip.Raw
