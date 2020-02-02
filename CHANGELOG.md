@@ -1,8 +1,11 @@
 # lzlib
 
+## 1.0.0.0
+
   * Support older GHCs
   * Use `ForeignPtr` for raw bindings
   * Stream lazily
+  * Add `compressFile` and `compressWithSz`
 
 ## 0.3.3.0
 

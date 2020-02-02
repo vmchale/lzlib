@@ -140,6 +140,7 @@ compressBest = compressWith Nine
 compressFast :: BSL.ByteString -> BSL.ByteString
 compressFast = compressWith Zero
 
+-- | @since 1.0.0.0
 compressFile :: FilePath -> IO BSL.ByteString
 compressFile fp =
     compressWithSz Six <$> BSL.readFile fp <*> fileSizeInt fp
