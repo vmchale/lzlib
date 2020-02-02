@@ -2,6 +2,8 @@
 
 -- | Consult the lzlib [documentation](https://www.nongnu.org/lzip/manual/lzlib_manual.html)
 -- for more details
+--
+-- This library uses 'Foreign.ForeignPtr.ForeignPtr's; to convert a @'Ptr' 'LZDecoder'@ to a @'Foreign.ForeignPtr.ForeignPtr' 'LZDecoder'@, use 'Foreign.ForeignPtr.newForeignPtr', e.g.
 module Codec.Lzip.Raw ( -- * Prolegomena
                         LZErrno (..)
                       , lZVersion
@@ -93,7 +95,6 @@ data LZEncoder
 {# pointer *LZ_Encoder as LZEncoderPtr foreign finalizer LZ_compress_close as ^ -> LZEncoder #}
 
 {# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `Ptr LZEncoder' id #}
--- {# fun LZ_compress_close as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_restart_member as ^ { `LZEncoderPtr', id `CULLong' } -> `CInt' #}
 {# fun LZ_compress_sync_flush as ^ { `LZEncoderPtr' } -> `CInt' #}
@@ -114,7 +115,6 @@ data LZDecoder
 {# pointer *LZ_Decoder as LZDecoderPtr foreign finalizer LZ_decompress_close as ^ -> LZDecoder #}
 
 {# fun LZ_decompress_open as ^ {} -> `Ptr LZDecoder' id #}
--- {# fun LZ_decompress_close as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_reset as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_sync_to_member as ^ { `LZDecoderPtr' } -> `CInt' #}
