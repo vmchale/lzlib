@@ -5,6 +5,7 @@ module Codec.Lzip ( compress
                   , compressFast
                   , compressWith
                   , decompress
+                  , compressFile
                   , CompressionLevel (..)
                   -- * Low-level bindings
                   , module Codec.Lzip.Raw
@@ -28,6 +29,8 @@ import           Foreign.ForeignPtr           (ForeignPtr, castForeignPtr,
                                                mallocForeignPtrBytes,
                                                newForeignPtr, withForeignPtr)
 import           Foreign.Ptr                  (castPtr)
+import           System.IO                    (IOMode (ReadMode), hFileSize,
+                                               withFile)
 
 data CompressionLevel = Zero
     | One
@@ -136,11 +139,24 @@ compressBest = compressWith Nine
 compressFast :: BSL.ByteString -> BSL.ByteString
 compressFast = compressWith Zero
 
+compressFile :: FilePath -> IO BSL.ByteString
+compressFile fp =
+    compressWithSz Six <$> BSL.readFile fp <*> fileSizeInt fp
+
+fileSizeInt :: FilePath -> IO Int
+fileSizeInt fp = fromIntegral <$> withFile fp ReadMode hFileSize
+
 compressWith :: CompressionLevel -> BSL.ByteString -> BSL.ByteString
-compressWith level bstr = runST $ do
+compressWith level bstr =
+    let sz = BSL.length bstr in
+        compressWithSz level bstr (fromIntegral sz)
+
+compressWithSz :: CompressionLevel -> BSL.ByteString -> Int -> BSL.ByteString
+compressWithSz level bstr sz = runST $ do
 
     let bss = BSL.toChunks bstr
-        sz = fromIntegral (BSL.length bstr)
+        -- sz = 33554432 -- 32 * 1024
+        -- TODO: window??
         delta = sz `div` 4 + 64
 
     (buf, enc) <- LazyST.unsafeIOToST $ do
@@ -160,8 +176,7 @@ compressWith level bstr = runST $ do
                     then
                         let (bs', rest) = BS.splitAt maxSz bs in
                             BS.unsafeUseAsCStringLen bs' $ \(bytes, sz') ->
-                                lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') *>
-                                lZCompressFinish encoder $> [rest]
+                                lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> [rest]
                     else
                         BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
                             lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') *>
@@ -170,7 +185,7 @@ compressWith level bstr = runST $ do
                     then
                         let (bs', rest) = BS.splitAt maxSz bs in
                         BS.unsafeUseAsCStringLen bs' $ \(bytes, sz') ->
-                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> (rest:bss')
+                            lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> rest:bss'
                     else
                         BS.unsafeUseAsCStringLen bs $ \(bytes, sz') ->
                             lZCompressWrite encoder (castPtr bytes) (fromIntegral sz') $> bss'
