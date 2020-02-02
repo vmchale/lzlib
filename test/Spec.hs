@@ -1,6 +1,7 @@
 module Main ( main ) where
 
-import           Codec.Lzip
+import           Codec.Lzip                   (compress, compressBest,
+                                               decompress)
 import           Control.Applicative
 import           Control.Monad                (filterM)
 import qualified Data.ByteString.Lazy         as BSL
@@ -13,7 +14,7 @@ compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 compressFileGeneral f fp = parallel $
     it ("decompress . compress should be identity (" ++ fp ++ ")") $ do
         str <- f fp
-        decompress (compressBest str) `shouldBe` str
+        decompress (compress str) `shouldBe` str
 
 compressFileFreaky :: FilePath -> Spec
 compressFileFreaky = compressFileGeneral nonstandardRead
