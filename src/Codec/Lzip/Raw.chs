@@ -3,7 +3,7 @@
 -- | Consult the lzlib [documentation](https://www.nongnu.org/lzip/manual/lzlib_manual.html)
 -- for more details
 --
--- This library uses 'Foreign.ForeignPtr.ForeignPtr's; to convert a @'Ptr' 'LZDecoder'@ to a @'Foreign.ForeignPtr.ForeignPtr' 'LZDecoder'@, use 'Foreign.ForeignPtr.newForeignPtr', e.g.
+-- This library uses 'Foreign.ForeignPtr.ForeignPtr's; to convert a @'Ptr' 'LZDecoder'@ to a @'Foreign.ForeignPtr.ForeignPtr' 'LZDecoder'@, use 'Foreign.ForeignPtr.newForeignPtr'
 module Codec.Lzip.Raw ( -- * Prolegomena
                         LZErrno (..)
                       , lZVersion
