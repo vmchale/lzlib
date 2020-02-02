@@ -1,11 +1,12 @@
 # lzlib
 
-## 1.0.0.01
+## 1.0.1.0
 
-  * Remove `Codec.Lzip.Raw`
+  * Export `lZApiVersion` and `lZVersion`
 
 ## 1.0.0.0
 
+  * Remove `Codec.Lzip.Raw`
   * Support older GHCs
   * Use `ForeignPtr` for raw bindings
   * Stream lazily
