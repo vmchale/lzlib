@@ -4,6 +4,7 @@ module Codec.Lzip ( compress
                   , compressBest
                   , compressFast
                   , compressWith
+                  , compressWithSz
                   , decompress
                   , compressFile
                   , CompressionLevel (..)
@@ -155,8 +156,6 @@ compressWithSz :: CompressionLevel -> BSL.ByteString -> Int -> BSL.ByteString
 compressWithSz level bstr sz = runST $ do
 
     let bss = BSL.toChunks bstr
-        -- sz = 33554432 -- 32 * 1024
-        -- TODO: window??
         delta = sz `div` 4 + 64
 
     (buf, enc) <- LazyST.unsafeIOToST $ do
@@ -165,11 +164,11 @@ compressWithSz level bstr sz = runST $ do
         enc <- newForeignPtr lZCompressClose (castPtr encoder)
         pure (buf, enc)
 
-    BSL.fromChunks <$> loop (castForeignPtr enc) bss (buf, delta)
+    BSL.fromChunks <$> loop (castForeignPtr enc) bss buf
 
     where
-        step :: LZEncoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, Int) -> LazyST.ST s (Bool, BS.ByteString, [BS.ByteString])
-        step encoder bss (buf, sz) = LazyST.unsafeIOToST $ do
+        step :: LZEncoderPtr -> [BS.ByteString] -> ForeignPtr UInt8 -> LazyST.ST s (Bool, BS.ByteString, [BS.ByteString])
+        step encoder bss buf = LazyST.unsafeIOToST $ do
             maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
                 [bs] -> if BS.length bs > maxSz
@@ -199,7 +198,7 @@ compressWithSz level bstr sz = runST $ do
                     then pure (True, bsActual, error "Internal error in lzlib-hs")
                     else pure (False, bsActual, bss')
 
-        loop :: LZEncoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, Int) -> LazyST.ST s [BS.ByteString]
+        loop :: LZEncoderPtr -> [BS.ByteString] -> ForeignPtr UInt8 -> LazyST.ST s [BS.ByteString]
         loop encoder bss bufOut = do
 
             (stop, res, bss') <- step encoder bss bufOut
