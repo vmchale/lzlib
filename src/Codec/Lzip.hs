@@ -152,7 +152,11 @@ compressWith level bstr =
     let sz = BSL.length bstr in
         compressWithSz level bstr (fromIntegral sz)
 
-compressWithSz :: CompressionLevel -> BSL.ByteString -> Int -> BSL.ByteString
+-- | @since 1.0.0.0
+compressWithSz :: CompressionLevel
+               -> BSL.ByteString
+               -> Int -- ^ Size of compression window
+               -> BSL.ByteString
 compressWithSz level bstr sz = runST $ do
 
     let bss = BSL.toChunks bstr
