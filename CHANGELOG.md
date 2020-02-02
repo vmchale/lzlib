@@ -1,8 +1,8 @@
 # lzlib
 
-  * Nicer loops
   * Support older GHCs
-  * Use `ForeignPtr` internally in some places
+  * Use `ForeignPtr` for raw bindings
+  * Stream lazily
 
 ## 0.3.3.0
 
