@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.0.01
+
+  * Remove `Codec.Lzip.Raw`
+
 ## 1.0.0.0
 
   * Support older GHCs
