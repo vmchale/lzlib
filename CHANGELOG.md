@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.2.0
+
+  * Improve haddocks
+
 ## 1.0.1.0
 
   * Export `lZApiVersion` and `lZVersion`

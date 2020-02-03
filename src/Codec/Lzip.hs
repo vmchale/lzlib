@@ -1,13 +1,18 @@
 {-# LANGUAGE TupleSections #-}
 
-module Codec.Lzip ( compress
+module Codec.Lzip ( -- * Compression
+                    compress
                   , compressBest
                   , compressFast
+                  , compressSz
+                  , compressSzBest
+                  , compressSzFast
                   , compressWith
                   , compressWithSz
-                  , decompress
                   , compressFile
                   , CompressionLevel (..)
+                  -- * Decompression
+                  , decompress
                   -- * Miscellany
                   , lZVersion
                   , lZApiVersion
@@ -125,9 +130,33 @@ decompress bs = runST $ do
                 Nothing -> pure []
                 Just x  -> (x:) <$> loop decoder bss' bufOut
 
--- | Defaults to 'Six'
+-- | Alias for @'compressWith' 'Six'@
 compress :: BSL.ByteString -> BSL.ByteString
 compress = compressWith Six
+
+-- | Alias for @'compressWithSz' 'Six'@
+--
+-- @since 1.0.2.0
+compressSz :: BSL.ByteString
+           -> Int -- ^ Length of input data, in bytes
+           -> BSL.ByteString
+compressSz = compressWithSz Six
+
+-- | Alias for @'compressWithSz' 'Nine'@
+--
+-- @since 1.0.2.0
+compressSzBest :: BSL.ByteString
+           -> Int -- ^ Length of input data, in bytes
+           -> BSL.ByteString
+compressSzBest = compressWithSz Nine
+
+-- | Alias for @'compressWithSz' 'Zero'@
+--
+-- @since 1.0.2.0
+compressSzFast :: BSL.ByteString
+           -> Int -- ^ Length of input data, in bytes
+           -> BSL.ByteString
+compressSzFast = compressWithSz Zero
 
 -- | Alias for @'compressWith' 'Nine'@
 --
@@ -157,7 +186,7 @@ compressWith level bstr =
 -- | @since 1.0.0.0
 compressWithSz :: CompressionLevel
                -> BSL.ByteString
-               -> Int -- ^ Size of compression window
+               -> Int -- ^ Size of data being compressed, in bytes.
                -> BSL.ByteString
 compressWithSz level bstr sz = runST $ do
 
