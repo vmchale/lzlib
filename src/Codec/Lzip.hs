@@ -138,7 +138,7 @@ compress = compressWith Six
 --
 -- @since 1.0.2.0
 compressSz :: BSL.ByteString
-           -> Int -- ^ Length of input data, in bytes
+           -> Int -- ^ Size of input data, in bytes
            -> BSL.ByteString
 compressSz = compressWithSz Six
 
@@ -146,7 +146,7 @@ compressSz = compressWithSz Six
 --
 -- @since 1.0.2.0
 compressSzBest :: BSL.ByteString
-           -> Int -- ^ Length of input data, in bytes
+           -> Int -- ^ Size of input data, in bytes
            -> BSL.ByteString
 compressSzBest = compressWithSz Nine
 
@@ -154,7 +154,7 @@ compressSzBest = compressWithSz Nine
 --
 -- @since 1.0.2.0
 compressSzFast :: BSL.ByteString
-           -> Int -- ^ Length of input data, in bytes
+           -> Int -- ^ Size of input data, in bytes
            -> BSL.ByteString
 compressSzFast = compressWithSz Zero
 
