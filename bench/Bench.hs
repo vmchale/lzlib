@@ -6,36 +6,22 @@ import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath      ((</>))
 import           System.IO.Temp       (withSystemTempDirectory)
 
-roundtrip :: BSL.ByteString -> BSL.ByteString
-roundtrip = compress . decompress
+unpack :: FilePath -> IO ()
+unpack fp' = withSystemTempDirectory "lzlib" $
+    \fp -> BSL.writeFile (fp </> "dump.tar") =<<
+        (decompress <$> BSL.readFile fp')
 
-roundtrip' :: BSL.ByteString -> BSL.ByteString
-roundtrip' = decompress . compress
-
-unpack :: IO ()
-unpack = withSystemTempDirectory "lzlib" $
-    \fp -> BSL.writeFile (fp </> "lzlib.tar.lz") =<<
-        (roundtrip <$> BSL.readFile "lzlib-1.10.tar.lz")
-
-unpack' :: IO ()
-unpack' = withSystemTempDirectory "lzlib" $
-    \fp -> BSL.writeFile (fp </> "lzlib.tar") =<<
-        (roundtrip' <$> BSL.readFile "lzlib-1.10.tar")
+pack :: FilePath -> IO ()
+pack fp' = withSystemTempDirectory "lzlib" $
+    \fp -> BSL.writeFile (fp </> "dump.tar.lz") =<<
+        (compressFile fp')
 
 main :: IO ()
 main =
-    defaultMain [ env file $ \ f ->
-                  bgroup "roundtrip (decompress/compress)"
-                      [ bench "lzlib (lzlib)" $ nf roundtrip f
+    defaultMain [ bgroup "unpack"
+                      [ bench "lzlib" $ nfIO (unpack "lzlib-1.10.tar.lz")
+                      , bench "lzlib" $ nfIO (unpack "gmp-6.1.2.tar.lz")
                       ]
-                , bgroup "unpack (decompress/compress)"
-                      [ bench "lzlib" $ nfIO unpack ]
-                , env decompressed $ \ f ->
-                  bgroup "roundtrip' (compress/decompress)"
-                      [ bench "lzlib (lzlib)" $ nf roundtrip' f
-                      ]
-                , bgroup "unpack' (compress/decompress)"
-                      [ bench "lzlib" $ nfIO unpack' ]
+                , bgroup "pack"
+                      [ bench "lzlib" $ nfIO (pack "lzlib-1.10.tar") ]
                 ]
-    where file = BSL.readFile "lzlib-1.10.tar.lz"
-          decompressed = BSL.readFile "lzlib-1.10.tar"
