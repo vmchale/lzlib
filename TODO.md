@@ -1,6 +1,4 @@
-- [ ] Fix space leak (?)
-  - [x] Use this approach: https://hackage.haskell.org/package/lzma-0.0.0.3/docs/src/Codec.Compression.Lzma.html#decompress
-  - [x] https://hackage.haskell.org/package/lzma-0.0.0.3/docs/src/LibLzma.html#runLzmaStream
+- [x] Fix space leak (?)
   - [ ] Fix compression
 - [ ] Fix `hstar` streaming - couldn't pack `ghc-8.8.2` dir in constant space?
 # Upstream
