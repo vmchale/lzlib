@@ -76,7 +76,7 @@ decompress bs = runST $ do
 
     let bss = BSL.toChunks bs
         szOut :: Integral a => a
-        szOut = 32 * 1024
+        szOut = 64 * 1024
 
     (dec, bufOut) <- LazyST.unsafeIOToST $ do
         bufOut <- mallocForeignPtrBytes szOut
