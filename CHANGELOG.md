@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.2.1
+
+  * Tweak buffering
+
 ## 1.0.2.0
 
   * Improve haddocks
