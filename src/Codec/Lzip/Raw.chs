@@ -28,13 +28,11 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       , lZDecompressOpen
                       , lZDecompressClose
                       , lZDecompressFinish
-                      , lZDecompressReset
                       , lZDecompressRead
                       , lZDecompressWrite
                       , lZDecompressWriteSize
                       , lZDecompressErrno
                       , lZDecompressFinished
-                      , lZDecompressDictionarySize
                       -- * Macros
                       , lZApiVersion
                       ) where
@@ -87,10 +85,8 @@ data LZDecoder
 
 {# fun LZ_decompress_open as ^ {} -> `Ptr LZDecoder' id #}
 {# fun LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
-{# fun LZ_decompress_reset as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_read as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_decompress_write as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_decompress_write_size as ^ { `LZDecoderPtr' } -> `CInt' #}
 {# fun LZ_decompress_errno as ^ { `LZDecoderPtr' } -> `LZErrno' #}
 {# fun LZ_decompress_finished as ^ { `LZDecoderPtr' } -> `CInt' #}
-{# fun LZ_decompress_dictionary_size as ^ { `LZDecoderPtr' } -> `CInt' #}
