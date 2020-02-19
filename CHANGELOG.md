@@ -1,5 +1,7 @@
 # lzlib
 
+  * More laconic internals
+
 ## 1.0.2.1
 
   * Tweak buffering
