@@ -26,6 +26,8 @@ extra-source-files:
     cbits/fast_encoder.h
     cbits/lzip.h
     cbits/lzlib.h
+    test/data/test.txt
+    test/data/test.txt.lz
 
 extra-doc-files:
     README.md
