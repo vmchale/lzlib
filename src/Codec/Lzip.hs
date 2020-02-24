@@ -10,6 +10,7 @@ module Codec.Lzip ( -- * Compression
                   , compressWith
                   , compressWithSz
                   , compressFile
+                  , compressFileLevel
                   , CompressionLevel (..)
                   -- * Decompression
                   , decompress
@@ -172,8 +173,12 @@ compressFast = compressWith Zero
 
 -- | @since 1.0.0.0
 compressFile :: FilePath -> IO BSL.ByteString
-compressFile fp =
-    compressWithSz Six <$> BSL.readFile fp <*> fileSizeInt fp
+compressFile = compressFileLevel Six
+
+-- | @since 1.0.3.0
+compressFileLevel :: CompressionLevel -> FilePath -> IO BSL.ByteString
+compressFileLevel lvl fp =
+    compressWithSz lvl <$> BSL.readFile fp <*> fileSizeInt fp
 
 fileSizeInt :: FilePath -> IO Int
 fileSizeInt fp = fromIntegral <$> withFile fp ReadMode hFileSize

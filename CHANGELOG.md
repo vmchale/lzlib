@@ -1,6 +1,9 @@
 # lzlib
 
+## 1.0.3.0
+
   * More laconic internals
+  * Add `compressFileLevel`
 
 ## 1.0.2.1
 
