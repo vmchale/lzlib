@@ -3,7 +3,7 @@
 ## 1.0.3.0
 
   * More laconic internals
-  * Add `compressFileLevel`
+  * Add `compressFileLevel` &c.
 
 ## 1.0.2.1
 
