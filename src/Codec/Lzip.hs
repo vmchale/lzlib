@@ -52,6 +52,7 @@ data CompressionLevel = Zero
     | Seven
     | Eight
     | Nine
+    deriving (Enum)
 
 data LzOptions = LzOptions
     { _dictionarySize :: !Int
