@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.4.0
+
+  * Add `Enum` instance to `CompressionLevel`
+
 ## 1.0.3.0
 
   * More laconic internals
