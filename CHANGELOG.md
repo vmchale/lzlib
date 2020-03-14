@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.5.0
+
+  * Export `LZError`
+
 ## 1.0.4.0
 
   * Add `Enum` instance to `CompressionLevel`

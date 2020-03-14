@@ -1,5 +1,8 @@
 {-# LANGUAGE TupleSections #-}
 
+-- | Functions throw 'LZErrno' on failure
+--
+-- Compression functions should work on arbitrary data
 module Codec.Lzip ( -- * Compression
                     compress
                   , compressBest
@@ -14,6 +17,13 @@ module Codec.Lzip ( -- * Compression
                   , compressFileBest
                   , compressFileFast
                   , CompressionLevel (..)
+                  , LZErrno
+                    ( LzMemError
+                    , LzHeaderError
+                    , LzUnexpectedEof
+                    , LzDataError
+                    , LzLibraryError
+                    )
                   -- * Decompression
                   , decompress
                   -- * Miscellany
@@ -75,6 +85,8 @@ encoderOptions Nine  = LzOptions (1 `shiftL` 25) 273
 -- [lziprecover](https://www.nongnu.org/lzip/lziprecover.html).
 --
 -- Doesn't work on empty 'BSL.ByteString's
+--
+-- Throws 'LZErrno' on error
 decompress :: BSL.ByteString -> BSL.ByteString
 decompress bs = runST $ do
 
