@@ -7,9 +7,7 @@
 module Codec.Lzip.Raw ( -- * Prolegomena
                         LZErrno (..)
                       , lZVersion
-                      , lZStrerror
                       , lZMinDictionarySize
-                      , lZMaxDictionarySize
                       , UInt8
                       -- * Compression functions
                       , LZEncoder
@@ -20,7 +18,6 @@ module Codec.Lzip.Raw ( -- * Prolegomena
                       , lZCompressRead
                       , lZCompressWrite
                       , lZCompressWriteSize
-                      , lZCompressErrno
                       , lZCompressFinished
                       -- * Decompression functions
                       , LZDecoder
@@ -58,7 +55,6 @@ type UInt8 = {# type uint8_t #}
 {# fun pure LZ_version as ^ {} -> `String' #}
 {# fun pure LZ_strerror as ^ { `LZErrno' } -> `String' #}
 {# fun pure LZ_min_dictionary_size as ^ {} -> `CInt' #}
-{# fun pure LZ_max_dictionary_size as ^ {} -> `CInt' #}
 
 instance Show LZErrno where
     show = lZStrerror
@@ -75,7 +71,6 @@ data LZEncoder
 {# fun LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_compress_write_size as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun LZ_compress_errno as ^ { `LZEncoderPtr' } -> `LZErrno' #}
 {# fun LZ_compress_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
 
 -- | Abstract data type
