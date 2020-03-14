@@ -5,7 +5,13 @@
 --
 -- This library uses 'Foreign.ForeignPtr.ForeignPtr's; to convert a @'Ptr' 'LZDecoder'@ to a @'Foreign.ForeignPtr.ForeignPtr' 'LZDecoder'@, use 'Foreign.ForeignPtr.newForeignPtr'
 module Codec.Lzip.Raw ( -- * Prolegomena
-                        LZErrno (..)
+                        LZErrno
+                          ( LzMemError
+                          , LzHeaderError
+                          , LzUnexpectedEof
+                          , LzDataError
+                          , LzLibraryError
+                          )
                       , lZVersion
                       , lZMinDictionarySize
                       , UInt8
