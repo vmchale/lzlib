@@ -16,7 +16,11 @@ module Codec.Lzip ( -- * Compression
                   , compressFileLevel
                   , compressFileBest
                   , compressFileFast
+                  , compressFineTune
                   , CompressionLevel (..)
+                  , LzOptions (..)
+                  -- * Decompression
+                  , decompress
                   , LZErrno
                     ( LzMemError
                     , LzHeaderError
@@ -24,8 +28,6 @@ module Codec.Lzip ( -- * Compression
                     , LzDataError
                     , LzLibraryError
                     )
-                  -- * Decompression
-                  , decompress
                   -- * Miscellany
                   , lZVersion
                   , lZApiVersion
@@ -65,8 +67,8 @@ data CompressionLevel = Zero
     deriving (Enum)
 
 data LzOptions = LzOptions
-    { _dictionarySize :: !Int
-    , _matchLenLimit  :: !Int
+    { dictionarySize :: !Int
+    , matchLenLimit  :: !Int
     }
 
 encoderOptions :: CompressionLevel -> LzOptions
@@ -186,7 +188,9 @@ compressBest = compressWith Nine
 compressFast :: BSL.ByteString -> BSL.ByteString
 compressFast = compressWith Zero
 
--- | @since 1.0.0.0
+-- | Use this to avoid forcing the whole file into memory at once
+--
+-- @since 1.0.0.0
 compressFile :: FilePath -> IO BSL.ByteString
 compressFile = compressFileLevel Six
 
@@ -216,14 +220,20 @@ compressWithSz :: CompressionLevel
                -> BSL.ByteString
                -> Int -- ^ Size of data being compressed, in bytes.
                -> BSL.ByteString
-compressWithSz level bstr sz = runST $ do
+compressWithSz cl = compressFineTune (encoderOptions cl)
+
+compressFineTune :: LzOptions
+                 -> BSL.ByteString
+                 -> Int -- ^ Size of data being compressed, in bytes.
+                 -> BSL.ByteString
+compressFineTune opts bstr sz = runST $ do
 
     let bss = BSL.toChunks bstr
         delta = sz `div` 4 + 64
 
     (buf, enc) <- LazyST.unsafeIOToST $ do
         buf <- mallocForeignPtrBytes delta
-        encoder <- lZCompressOpen (fromIntegral $ dictionarySize sz) (fromIntegral matchLenLimit) (fromIntegral memberSize)
+        encoder <- lZCompressOpen (fromIntegral $ dictionarySize' sz) (fromIntegral matchLenLimit') (fromIntegral memberSize)
         enc <- newForeignPtr lZCompressClose (castPtr encoder)
         pure (buf, enc)
 
@@ -273,6 +283,5 @@ compressWithSz level bstr sz = runST $ do
         memberSize = maxBound
 
         -- saves memory
-        dictionarySize = max (fromIntegral lZMinDictionarySize) . min (_dictionarySize $ encoderOptions level)
-        matchLenLimit = _matchLenLimit opts
-        opts = encoderOptions level
+        dictionarySize' = max (fromIntegral lZMinDictionarySize) . min (dictionarySize opts)
+        matchLenLimit' = matchLenLimit opts
