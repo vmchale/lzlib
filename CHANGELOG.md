@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.6.0
+
+  * Export `compressFineTune`
+
 ## 1.0.5.0
 
   * Export `LZError`
