@@ -72,22 +72,22 @@ data LZEncoder
 
 {# pointer *LZ_Encoder as LZEncoderPtr foreign finalizer LZ_compress_close as ^ -> LZEncoder #}
 
-{# fun unsafe LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `Ptr LZEncoder' id #}
-{# fun unsafe LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun unsafe LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun unsafe LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun unsafe LZ_compress_write_size as ^ { `LZEncoderPtr' } -> `CInt' #}
-{# fun unsafe LZ_compress_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
+{# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `Ptr LZEncoder' id #}
+{# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
+{# fun LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_compress_write_size as ^ { `LZEncoderPtr' } -> `CInt' #}
+{# fun LZ_compress_finished as ^ { `LZEncoderPtr' } -> `CInt' #}
 
 -- | Abstract data type
 data LZDecoder
 
 {# pointer *LZ_Decoder as LZDecoderPtr foreign finalizer LZ_decompress_close as ^ -> LZDecoder #}
 
-{# fun unsafe LZ_decompress_open as ^ {} -> `Ptr LZDecoder' id #}
-{# fun unsafe LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
-{# fun unsafe LZ_decompress_read as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun unsafe LZ_decompress_write as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
-{# fun unsafe LZ_decompress_write_size as ^ { `LZDecoderPtr' } -> `CInt' #}
-{# fun unsafe LZ_decompress_errno as ^ { `LZDecoderPtr' } -> `LZErrno' #}
-{# fun unsafe LZ_decompress_finished as ^ { `LZDecoderPtr' } -> `CInt' #}
+{# fun LZ_decompress_open as ^ {} -> `Ptr LZDecoder' id #}
+{# fun LZ_decompress_finish as ^ { `LZDecoderPtr' } -> `CInt' #}
+{# fun LZ_decompress_read as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_decompress_write as ^ { `LZDecoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
+{# fun LZ_decompress_write_size as ^ { `LZDecoderPtr' } -> `CInt' #}
+{# fun LZ_decompress_errno as ^ { `LZDecoderPtr' } -> `LZErrno' #}
+{# fun LZ_decompress_finished as ^ { `LZDecoderPtr' } -> `CInt' #}
