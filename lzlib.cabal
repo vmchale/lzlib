@@ -90,6 +90,9 @@ test-suite lzlib-test
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
 
+    if impl(ghc >=8.10)
+        ghc-options: -Wunused-packages
+
 benchmark lzlib-bench
     type:             exitcode-stdio-1.0
     main-is:          Bench.hs
@@ -110,6 +113,9 @@ benchmark lzlib-bench
     if impl(ghc >=8.4)
         ghc-options: -Wmissing-export-lists
 
+    if impl(ghc >=8.10)
+        ghc-options: -Wunused-packages
+
 benchmark lzlib-mem
     type:             exitcode-stdio-1.0
     main-is:          Mem.hs
@@ -125,3 +131,6 @@ benchmark lzlib-mem
 
     if impl(ghc >=8.0)
         ghc-options: -Wincomplete-uni-patterns -Wincomplete-record-updates
+
+    if impl(ghc >=8.10)
+        ghc-options: -Wunused-packages
