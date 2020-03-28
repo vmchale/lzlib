@@ -3,12 +3,29 @@ module Main ( main ) where
 import           Codec.Lzip                   (compress, compressBest,
                                                decompress)
 import           Control.Applicative
+import           Control.Concurrent           (forkIO, newEmptyMVar, putMVar,
+                                               readMVar)
 import           Control.Monad                (filterM)
+import qualified Data.ByteString              as BS
 import qualified Data.ByteString.Lazy         as BSL
 import           Data.ByteString.Pathological (nonstandardRead)
 import           Data.Foldable                (traverse_)
 import           System.Directory             (doesFileExist)
 import           Test.Hspec
+
+forceHead :: BSL.ByteString -> IO ()
+forceHead bsl = BS.length (head $ BSL.toChunks bsl) `seq` mempty
+
+forceBSL :: BSL.ByteString -> IO ()
+forceBSL bsl = BS.length (last $ BSL.toChunks bsl) `seq` mempty
+
+decompressMultithreaded :: FilePath -> IO ()
+decompressMultithreaded fp = do
+    bsl <- decompress <$> BSL.readFile fp
+    forceHead bsl
+    done <- newEmptyMVar
+    _ <- forkIO (forceBSL bsl *> putMVar done ())
+    readMVar done
 
 compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
 compressFileGeneral f fp = parallel $
@@ -47,3 +64,6 @@ main = do
             traverse_ compressFileFreaky ex
         describe "roundtrip (sketchy)" $
             traverse_ decompressFileFreaky ex'
+        describe "decompress (multithreaded)" $
+            it "should not fail" $
+                traverse_ decompressMultithreaded ex'
