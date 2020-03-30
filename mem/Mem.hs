@@ -10,7 +10,7 @@ main :: IO ()
 main =
     compressDump *>
     decompressDump *>
-    decompressMultithreaded "gmp-6.1.2.tar.lz"
+    compressMultithreaded "gmp-6.1.2.tar"
 
 decompressDump :: IO ()
 decompressDump = withSystemTempDirectory "lz" $
@@ -28,9 +28,9 @@ forceHead bsl = BS.length (head $ BSL.toChunks bsl) `seq` mempty
 forceBSL :: BSL.ByteString -> IO ()
 forceBSL bsl = BS.length (last $ BSL.toChunks bsl) `seq` mempty
 
-decompressMultithreaded :: FilePath -> IO ()
-decompressMultithreaded fp = do
-    bsl <- decompress <$> BSL.readFile fp
+compressMultithreaded :: FilePath -> IO ()
+compressMultithreaded fp = do
+    bsl <- compressFile fp -- compress <$> BSL.readFile fp
     forceHead bsl
     done <- newEmptyMVar
     _ <- forkIO (forceBSL bsl *> putMVar done ())
