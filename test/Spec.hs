@@ -25,6 +25,7 @@ decompressMultithreaded fp = do
     forceHead bsl
     done <- newEmptyMVar
     _ <- forkIO (forceBSL bsl *> putMVar done ())
+    _ <- forkIO (forceBSL bsl *> putMVar done ())
     readMVar done
 
 compressFileGeneral :: (FilePath -> IO BSL.ByteString) -> FilePath -> Spec
