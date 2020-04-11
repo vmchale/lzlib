@@ -160,33 +160,33 @@ compressSz :: BSL.ByteString
            -> BSL.ByteString
 compressSz = compressWithSz Six
 
--- | Alias for @'compressWithSz' 'Nine'@
+-- | Alias for @'compressWithSz' 'maxBound'@
 --
 -- @since 1.0.2.0
 compressSzBest :: BSL.ByteString
            -> Int -- ^ Size of input data, in bytes
            -> BSL.ByteString
-compressSzBest = compressWithSz Nine
+compressSzBest = compressWithSz maxBound
 
--- | Alias for @'compressWithSz' 'Zero'@
+-- | Alias for @'compressWithSz' 'minBound'@
 --
 -- @since 1.0.2.0
 compressSzFast :: BSL.ByteString
            -> Int -- ^ Size of input data, in bytes
            -> BSL.ByteString
-compressSzFast = compressWithSz Zero
+compressSzFast = compressWithSz minBound
 
--- | Alias for @'compressWith' 'Nine'@
+-- | Alias for @'compressWith' 'maxBound'@
 --
 -- @since 0.3.2.0
 compressBest :: BSL.ByteString -> BSL.ByteString
-compressBest = compressWith Nine
+compressBest = compressWith maxBound
 
--- | Alias for @'compressWith' 'Zero'@
+-- | Alias for @'compressWith' 'minBound'@
 --
 -- @since 0.3.2.0
 compressFast :: BSL.ByteString -> BSL.ByteString
-compressFast = compressWith Zero
+compressFast = compressWith minBound
 
 -- | Use this to avoid forcing the whole file into memory at once
 --
@@ -196,7 +196,7 @@ compressFile = compressFileLevel Six
 
 -- | @since 1.0.3.0
 compressFileBest :: FilePath -> IO BSL.ByteString
-compressFileBest = compressFileLevel Nine
+compressFileBest = compressFileLevel maxBound
 
 -- | @since 1.0.3.0
 compressFileFast :: FilePath -> IO BSL.ByteString
