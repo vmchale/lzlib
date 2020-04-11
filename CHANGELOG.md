@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.7.0
+
+  * Add `Bounded` instance to `CompressionLevel`
+
 ## 1.0.6.0
 
   * Export `compressFineTune`
