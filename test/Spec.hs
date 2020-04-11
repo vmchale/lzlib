@@ -14,10 +14,10 @@ import           System.Directory             (doesFileExist)
 import           Test.Hspec
 
 forceHead :: BSL.ByteString -> IO ()
-forceHead bsl = BS.length (head $ BSL.toChunks bsl) `seq` mempty
+forceHead bsl = BS.length (head $ BSL.toChunks bsl) `seq` (pure ())
 
 forceBSL :: BSL.ByteString -> IO ()
-forceBSL bsl = BS.length (last $ BSL.toChunks bsl) `seq` mempty
+forceBSL bsl = BS.length (last $ BSL.toChunks bsl) `seq` (pure ())
 
 decompressMultithreaded :: FilePath -> IO ()
 decompressMultithreaded fp = do
