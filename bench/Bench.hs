@@ -14,7 +14,7 @@ unpack fp' = withSystemTempDirectory "lzlib" $
 pack :: FilePath -> IO ()
 pack fp' = withSystemTempDirectory "lzlib" $
     \fp -> BSL.writeFile (fp </> "dump.tar.lz") =<<
-        (compressFile fp')
+        compressFile fp'
 
 main :: IO ()
 main =

@@ -2,7 +2,7 @@
 
 set -e
 
-cabal build lzlib-mem --enable-profiling -w ghc-8.8.2
+cabal build lzlib-mem --enable-profiling
 "$(fd '^lzlib-mem$' -t x -I)" +RTS -h
 hp2pretty lzlib-mem.hp
 firefox lzlib-mem.svg
