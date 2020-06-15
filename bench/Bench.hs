@@ -1,6 +1,7 @@
 module Main (main) where
 
 import           Codec.Lzip
+import           Control.Applicative  ((<$>))
 import           Criterion.Main
 import qualified Data.ByteString.Lazy as BSL
 import           System.FilePath      ((</>))
