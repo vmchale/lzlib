@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
-int FLZe_longest_match_len( struct FLZ_encoder * const fe, int * const distance )
+static int FLZe_longest_match_len( struct FLZ_encoder * const fe, int * const distance )
   {
   enum { len_limit = 16 };
   const uint8_t * const data = Mb_ptr_to_current_pos( &fe->eb.mb );
@@ -59,7 +59,7 @@ int FLZe_longest_match_len( struct FLZ_encoder * const fe, int * const distance 
   }
 
 
-bool FLZe_encode_member( struct FLZ_encoder * const fe )
+static bool FLZe_encode_member( struct FLZ_encoder * const fe )
   {
   int rep = 0, i;
   State * const state = &fe->eb.state;
@@ -86,7 +86,7 @@ bool FLZe_encode_member( struct FLZ_encoder * const fe )
   while( !Mb_data_finished( &fe->eb.mb ) &&
          Re_member_position( &fe->eb.renc ) < fe->eb.member_size_limit )
     {
-    int match_distance;
+    int match_distance = 0;		/* avoid warning from gcc 6.1.0 */
     int main_len, pos_state;
     int len = 0;
     if( !Mb_enough_available_bytes( &fe->eb.mb ) ||

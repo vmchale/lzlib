@@ -21,16 +21,21 @@
 extern "C" {
 #endif
 
-#define LZ_API_VERSION 1
+/* LZ_API_VERSION  lzlib_version  (LZ_API_VERSION was first defined in 1.8)
+         1             1.8
+         2             1.12
+*/
 
-static const char * const LZ_version_string = "1.12-rc1";
+#define LZ_API_VERSION 2
+
+static const char * const LZ_version_string = "1.12-rc2";
 
 enum LZ_Errno { LZ_ok = 0,         LZ_bad_argument, LZ_mem_error,
                 LZ_sequence_error, LZ_header_error, LZ_unexpected_eof,
                 LZ_data_error,     LZ_library_error };
 
 
-int LZ_api_version( void );				/* don't use */
+int LZ_api_version( void );				/* new in 1.12 */
 const char * LZ_version( void );
 const char * LZ_strerror( const enum LZ_Errno lz_errno );
 

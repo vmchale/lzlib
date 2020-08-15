@@ -31,8 +31,6 @@ static inline void FLZe_reset_key4( struct FLZ_encoder * const fe )
     fe->key4 = ( fe->key4 << 4 ) ^ fe->eb.mb.buffer[i];
   }
 
-int FLZe_longest_match_len( struct FLZ_encoder * const fe, int * const distance );
-
 static inline bool FLZe_update_and_move( struct FLZ_encoder * const fe, int n )
   {
   struct Matchfinder_base * const mb = &fe->eb.mb;
