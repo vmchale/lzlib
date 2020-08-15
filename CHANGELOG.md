@@ -1,5 +1,7 @@
 # lzlib
 
+  * Bump to lzlib 1.12
+
 ## 1.0.7.0
 
   * Add `Bounded` instance to `CompressionLevel`
