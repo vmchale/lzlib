@@ -1,7 +1,0 @@
----
-resolver: lts-14.18
-ghc-options: {"$locals": -ddump-to-file -ddump-hi}
-packages:
-  - '.'
-extra-deps:
-  - pathological-bytestrings-0.1.0.0@sha256:0649a14d6e87091cc0f9e7430881e970e53008be262f878311b25d410ebf974b,1079
