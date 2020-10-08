@@ -17,7 +17,7 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
-enum { rd_min_available_bytes = 8 };
+enum { rd_min_available_bytes = 9 };
 
 struct Range_decoder
   {
