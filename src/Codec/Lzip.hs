@@ -265,6 +265,8 @@ compressFineTune opts bstr sz = runST $ do
 
             withForeignPtr buf $ \b -> do
                 bytesActual <- lZCompressRead encoder b (fromIntegral sz)
+                when (bytesActual == 0) $
+                    error "Internal error in lzlib: LZ_compress_read returned 0 bytes"
                 res <- lZCompressFinished encoder
                 bsActual <- BS.packCStringLen (castPtr b, fromIntegral bytesActual)
                 if res == 1
