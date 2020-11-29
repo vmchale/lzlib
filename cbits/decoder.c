@@ -123,8 +123,9 @@ static int LZd_decode_member( struct LZ_decoder * const d )
           if( distance == 0xFFFFFFFFU )		/* marker found */
             {
             Rd_normalize( rdec );
-            if( (unsigned)rdec->member_position - old_mpos > rd_min_available_bytes )
-              return 5;
+            const unsigned mpos = rdec->member_position;
+            if( mpos - old_mpos > rd_min_available_bytes ) return 5;
+            old_mpos = mpos;
             if( len == min_match_len )		/* End Of Stream marker */
               {
               d->verify_trailer_pending = true;
@@ -133,7 +134,7 @@ static int LZd_decode_member( struct LZ_decoder * const d )
             if( len == min_match_len + 1 )	/* Sync Flush marker */
               {
               rdec->reload_pending = true;
-              if( Rd_try_reload( rdec ) ) { old_mpos += 5; continue; }
+              if( Rd_try_reload( rdec ) ) continue;
               else { if( !rdec->at_stream_end ) return 0; else break; }
               }
             return 4;

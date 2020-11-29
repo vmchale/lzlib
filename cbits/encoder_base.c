@@ -152,20 +152,20 @@ static void LZeb_try_full_flush( struct LZ_encoder_base * const eb )
 /* Sync Flush marker => (dis == 0xFFFFFFFFU, len == min_match_len + 1) */
 static void LZeb_try_sync_flush( struct LZ_encoder_base * const eb )
   {
-  int i;
   const int pos_state = Mb_data_position( &eb->mb ) & pos_state_mask;
   const State state = eb->state;
+  const unsigned min_size = eb->renc.ff_count + max_marker_size;
   if( eb->member_finished ||
-      Cb_free_bytes( &eb->renc.cb ) < (2 * max_marker_size) + eb->renc.ff_count )
-    return;
+      Cb_free_bytes( &eb->renc.cb ) < min_size + max_marker_size ) return;
   eb->mb.sync_flush_pending = false;
-  for( i = 0; i < 2; ++i )	/* 2 consecutive markers guarantee decoding */
-    {
+  const unsigned long long old_mpos = Re_member_position( &eb->renc );
+  do {		/* size of markers must be >= rd_min_available_bytes + 5 */
     Re_encode_bit( &eb->renc, &eb->bm_match[state][pos_state], 1 );
     Re_encode_bit( &eb->renc, &eb->bm_rep[state], 0 );
     LZeb_encode_pair( eb, 0xFFFFFFFFU, min_match_len + 1, pos_state );
     Re_flush( &eb->renc );
     }
+  while( Re_member_position( &eb->renc ) - old_mpos < min_size );
   }
 
 
