@@ -9,8 +9,8 @@ import           System.IO.Temp       (withSystemTempDirectory)
 
 unpack :: FilePath -> IO ()
 unpack fp' = withSystemTempDirectory "lzlib" $
-    \fp -> BSL.writeFile (fp </> "dump.tar") =<<
-        (decompress <$> BSL.readFile fp')
+    \fp -> BSL.writeFile (fp </> "dump.tar")
+        . decompress =<< BSL.readFile fp'
 
 pack :: FilePath -> IO ()
 pack fp' = withSystemTempDirectory "lzlib" $
