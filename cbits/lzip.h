@@ -168,6 +168,7 @@ static const uint32_t crc32[256] =
 static inline void CRC32_update_byte( uint32_t * const crc, const uint8_t byte )
   { *crc = crc32[(*crc^byte)&0xFF] ^ ( *crc >> 8 ); }
 
+/* about as fast as it is possible without messing with endianness */
 static inline void CRC32_update_buf( uint32_t * const crc,
                                      const uint8_t * const buffer,
                                      const int size )
