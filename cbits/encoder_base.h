@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2021 Antonio Diaz Diaz.
+   Copyright (C) 2009-2022 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -578,8 +578,7 @@ static inline int LZeb_price_matched( const struct LZ_encoder_base * const eb,
 
 static inline void LZeb_encode_literal( struct LZ_encoder_base * const eb,
                             const uint8_t prev_byte, const uint8_t symbol )
-  { Re_encode_tree8( &eb->renc, eb->bm_literal[get_lit_state(prev_byte)],
-                     symbol ); }
+  { Re_encode_tree8( &eb->renc, eb->bm_literal[get_lit_state(prev_byte)], symbol ); }
 
 static inline void LZeb_encode_matched( struct LZ_encoder_base * const eb,
   const uint8_t prev_byte, const uint8_t symbol, const uint8_t match_byte )

@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2021 Antonio Diaz Diaz.
+   Copyright (C) 2009-2022 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -155,7 +155,7 @@ static void LZe_update_distance_prices( struct LZ_encoder * const e )
   }
 
 
-/* Returns the number of bytes advanced (ahead).
+/* Return the number of bytes advanced (ahead).
    trials[0]..trials[ahead-1] contain the steps to encode.
    ( trials[0].dis4 == -1 ) means literal.
    A match/rep longer or equal than match_len_limit finishes the sequence.

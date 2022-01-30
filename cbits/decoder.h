@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2021 Antonio Diaz Diaz.
+   Copyright (C) 2009-2022 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -72,8 +72,8 @@ static inline void Rd_reset( struct Range_decoder * const rdec )
     rdec->member_position = 0; rdec->at_stream_end = false; }
 
 
-/* Seeks a member header and updates 'get'. '*skippedp' is set to the
-   number of bytes skipped. Returns true if it finds a valid header.
+/* Seek for a member header and update 'get'. Set '*skippedp' to the number
+   of bytes skipped. Return true if a valid header is found.
 */
 static bool Rd_find_header( struct Range_decoder * const rdec,
                             unsigned * const skippedp )
