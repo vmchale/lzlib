@@ -1,6 +1,6 @@
 cabal-version:      1.18
 name:               lzlib
-version:            1.0.7.1
+version:            1.0.7.2
 license:            BSD3
 license-file:       LICENSE
 copyright:          Copyright: (c) 2019-2021 Vanessa McHale
@@ -53,7 +53,7 @@ library
     ghc-options:      -Wall
     build-depends:
         base >=4.7 && <5,
-        bytestring -any
+        bytestring
 
     if impl(ghc >=8.0)
         ghc-options:
@@ -76,12 +76,12 @@ test-suite lzlib-test
     default-language: Haskell2010
     ghc-options:      -threaded -rtsopts "-with-rtsopts=-N -K1K" -Wall
     build-depends:
-        base -any,
-        lzlib -any,
-        hspec -any,
-        bytestring -any,
-        directory -any,
-        pathological-bytestrings -any
+        base,
+        lzlib,
+        hspec,
+        bytestring,
+        directory,
+        pathological-bytestrings
 
     if impl(ghc >=8.0)
         ghc-options:
@@ -101,12 +101,12 @@ benchmark lzlib-bench
     default-language: Haskell2010
     ghc-options:      -Wall
     build-depends:
-        base -any,
-        lzlib -any,
-        criterion -any,
-        bytestring -any,
-        temporary -any,
-        filepath -any
+        base,
+        lzlib,
+        criterion,
+        bytestring,
+        temporary,
+        filepath
 
     if impl(ghc >=8.0)
         ghc-options:
@@ -126,11 +126,11 @@ benchmark lzlib-mem
     default-language: Haskell2010
     ghc-options:      -threaded -rtsopts -with-rtsopts=-N -Wall
     build-depends:
-        base -any,
-        lzlib -any,
-        filepath -any,
-        temporary -any,
-        bytestring -any
+        base,
+        lzlib,
+        filepath,
+        temporary,
+        bytestring
 
     if impl(ghc >=8.0)
         ghc-options: -Wincomplete-uni-patterns -Wincomplete-record-updates
