@@ -12,7 +12,7 @@ clean:
 	lzip --keep --decompress --force $@.lz
 
 gmp-6.1.2.tar.lz:
-	curl https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz -o $@
+	curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz -o $@
 
 lzlib-1.10.tar.lz:
-	curl http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -o $@ -L
+	curl -L http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -o $@

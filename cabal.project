@@ -1,3 +1,5 @@
 packages: ./
 
 max-backjumps: 40000
+
+haddock-internal: true
