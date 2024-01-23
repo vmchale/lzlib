@@ -1,5 +1,9 @@
 # lzlib
 
+## 1.0.7.3
+
+  * Bump C sources to lzlib 1.14
+
 ## 1.0.7.2
 
   * Bump C sources to lzlib 1.13
