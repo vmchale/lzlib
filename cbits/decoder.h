@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2022 Antonio Diaz Diaz.
+   Copyright (C) 2009-2024 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -50,7 +50,7 @@ static inline void Rd_finish( struct Range_decoder * const rdec )
   { rdec->at_stream_end = true; }
 
 static inline bool Rd_enough_available_bytes( const struct Range_decoder * const rdec )
-  { return ( Cb_used_bytes( &rdec->cb ) >= rd_min_available_bytes ); }
+  { return Cb_used_bytes( &rdec->cb ) >= rd_min_available_bytes; }
 
 static inline unsigned Rd_available_bytes( const struct Range_decoder * const rdec )
   { return Cb_used_bytes( &rdec->cb ); }
@@ -92,7 +92,7 @@ static bool Rd_find_header( struct Range_decoder * const rdec,
         header[i] = rdec->cb.buffer[get];
         if( ++get >= rdec->cb.buffer_size ) get = 0;
         }
-      if( Lh_verify( header ) ) return true;
+      if( Lh_check( header ) ) return true;
       }
     if( ++rdec->cb.get >= rdec->cb.buffer_size ) rdec->cb.get = 0;
     ++*skippedp;
@@ -137,12 +137,12 @@ static bool Rd_try_reload( struct Range_decoder * const rdec )
   {
   if( rdec->reload_pending && Rd_available_bytes( rdec ) >= 5 )
     {
-    int i;
     rdec->reload_pending = false;
     rdec->code = 0;
-    for( i = 0; i < 5; ++i ) rdec->code = (rdec->code << 8) | Rd_get_byte( rdec );
     rdec->range = 0xFFFFFFFFU;
-    rdec->code &= rdec->range;	/* make sure that first byte is discarded */
+    Rd_get_byte( rdec );	/* discard first byte of the LZMA stream */
+    int i; for( i = 0; i < 4; ++i )
+      rdec->code = (rdec->code << 8) | Rd_get_byte( rdec );
     }
   return !rdec->reload_pending;
   }
@@ -334,8 +334,8 @@ struct LZ_decoder
   struct Range_decoder * rdec;
   unsigned dictionary_size;
   uint32_t crc;
+  bool check_trailer_pending;
   bool member_finished;
-  bool verify_trailer_pending;
   bool pos_wrapped;
   unsigned rep0;		/* rep[0-3] latest four distances */
   unsigned rep1;		/* used for efficient coding of */
@@ -423,8 +423,8 @@ static inline bool LZd_init( struct LZ_decoder * const d,
   d->rdec = rde;
   d->dictionary_size = dict_size;
   d->crc = 0xFFFFFFFFU;
+  d->check_trailer_pending = false;
   d->member_finished = false;
-  d->verify_trailer_pending = false;
   d->pos_wrapped = false;
   /* prev_byte of first byte; also for LZd_peek( 0 ) on corrupt file */
   d->cb.buffer[d->cb.buffer_size-1] = 0;
@@ -453,7 +453,7 @@ static inline void LZd_free( struct LZ_decoder * const d )
   { Cb_free( &d->cb ); }
 
 static inline bool LZd_member_finished( const struct LZ_decoder * const d )
-  { return ( d->member_finished && Cb_empty( &d->cb ) ); }
+  { return d->member_finished && Cb_empty( &d->cb ); }
 
 static inline unsigned LZd_crc( const struct LZ_decoder * const d )
   { return d->crc ^ 0xFFFFFFFFU; }

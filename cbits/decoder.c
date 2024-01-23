@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2022 Antonio Diaz Diaz.
+   Copyright (C) 2009-2024 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -17,12 +17,12 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 */
 
-static int LZd_try_verify_trailer( struct LZ_decoder * const d )
+static int LZd_try_check_trailer( struct LZ_decoder * const d )
   {
   Lzip_trailer trailer;
   if( Rd_available_bytes( d->rdec ) < Lt_size )
     { if( !d->rdec->at_stream_end ) return 0; else return 2; }
-  d->verify_trailer_pending = false;
+  d->check_trailer_pending = false;
   d->member_finished = true;
 
   if( Rd_read_data( d->rdec, trailer, Lt_size ) == Lt_size &&
@@ -45,7 +45,7 @@ static int LZd_decode_member( struct LZ_decoder * const d )
   if( d->member_finished ) return 0;
   if( !Rd_try_reload( rdec ) )
     { if( !rdec->at_stream_end ) return 0; else return 2; }
-  if( d->verify_trailer_pending ) return LZd_try_verify_trailer( d );
+  if( d->check_trailer_pending ) return LZd_try_check_trailer( d );
 
   while( !Rd_finished( rdec ) )
     {
@@ -121,14 +121,14 @@ static int LZd_decode_member( struct LZ_decoder * const d )
             old_mpos = mpos; */
             if( len == min_match_len )		/* End Of Stream marker */
               {
-              d->verify_trailer_pending = true;
-              return LZd_try_verify_trailer( d );
+              d->check_trailer_pending = true;
+              return LZd_try_check_trailer( d );
               }
             if( len == min_match_len + 1 )	/* Sync Flush marker */
               {
               rdec->reload_pending = true;
               if( Rd_try_reload( rdec ) ) continue;
-              else { if( !rdec->at_stream_end ) return 0; else break; }
+              if( !rdec->at_stream_end ) return 0; else break;
               }
             return 4;
             }

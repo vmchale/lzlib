@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2022 Antonio Diaz Diaz.
+   Copyright (C) 2009-2024 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -200,8 +200,6 @@ static int LZe_sequence_optimizer( struct LZ_encoder * const e,
     }
 
   const int pos_state = Mb_data_position( &e->eb.mb ) & pos_state_mask;
-  const int match_price = price1( e->eb.bm_match[state][pos_state] );
-  const int rep_match_price = match_price + price1( e->eb.bm_rep[state] );
   const uint8_t prev_byte = Mb_peek( &e->eb.mb, 1 );
   const uint8_t cur_byte = Mb_peek( &e->eb.mb, 0 );
   const uint8_t match_byte = Mb_peek( &e->eb.mb, reps[0] + 1 );
@@ -212,6 +210,9 @@ static int LZe_sequence_optimizer( struct LZ_encoder * const e,
   else
     e->trials[1].price += LZeb_price_matched( &e->eb, prev_byte, cur_byte, match_byte );
   e->trials[1].dis4 = -1;				/* literal */
+
+  const int match_price = price1( e->eb.bm_match[state][pos_state] );
+  const int rep_match_price = match_price + price1( e->eb.bm_rep[state] );
 
   if( match_byte == cur_byte )
     Tr_update( &e->trials[1], rep_match_price +

@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2022 Antonio Diaz Diaz.
+   Copyright (C) 2009-2024 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -140,9 +140,7 @@ static void LZeb_try_full_flush( struct LZ_encoder_base * const eb )
   Lt_set_data_crc( trailer, LZeb_crc( eb ) );
   Lt_set_data_size( trailer, Mb_data_position( &eb->mb ) );
   Lt_set_member_size( trailer, Re_member_position( &eb->renc ) + Lt_size );
-  int i;
-  for( i = 0; i < Lt_size; ++i )
-    Cb_put_byte( &eb->renc.cb, trailer[i] );
+  int i; for( i = 0; i < Lt_size; ++i ) Cb_put_byte( &eb->renc.cb, trailer[i] );
   }
 
 
