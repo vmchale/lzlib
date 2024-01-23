@@ -14,7 +14,6 @@ description:
 category:           Codec, Compression
 build-type:         Simple
 extra-source-files:
-    stack.yaml
     cbits/cbuffer.c
     cbits/decoder.c
     cbits/decoder.h
