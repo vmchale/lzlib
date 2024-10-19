@@ -126,9 +126,8 @@ static void Mb_reset( struct Matchfinder_base * const mb )
 /* End Of Stream marker => (dis == 0xFFFFFFFFU, len == min_match_len) */
 static void LZeb_try_full_flush( struct LZ_encoder_base * const eb )
   {
-  if( eb->member_finished ||
-      Cb_free_bytes( &eb->renc.cb ) < max_marker_size + eb->renc.ff_count + Lt_size )
-    return;
+  if( eb->member_finished || Cb_free_bytes( &eb->renc.cb ) <
+      max_marker_size + eb->renc.ff_count + Lt_size ) return;
   eb->member_finished = true;
   const int pos_state = Mb_data_position( &eb->mb ) & pos_state_mask;
   const State state = eb->state;
@@ -169,11 +168,9 @@ static void LZeb_reset( struct LZ_encoder_base * const eb,
   {
   const unsigned long long min_member_size = min_dictionary_size;
   const unsigned long long max_member_size = 0x0008000000000000ULL; /* 2 PiB */
-  int i;
   Mb_reset( &eb->mb );
-  eb->member_size_limit =
-    min( max( min_member_size, member_size ), max_member_size ) -
-    Lt_size - max_marker_size;
+  eb->member_size_limit = min( max( min_member_size, member_size ),
+                          max_member_size ) - Lt_size - max_marker_size;
   eb->crc = 0xFFFFFFFFU;
   Bm_array_init( eb->bm_literal[0], (1 << literal_context_bits) * 0x300 );
   Bm_array_init( eb->bm_match[0], states * pos_states );
@@ -188,7 +185,7 @@ static void LZeb_reset( struct LZ_encoder_base * const eb,
   Lm_init( &eb->match_len_model );
   Lm_init( &eb->rep_len_model );
   Re_reset( &eb->renc, eb->mb.dictionary_size );
-  for( i = 0; i < num_rep_distances; ++i ) eb->reps[i] = 0;
+  int i; for( i = 0; i < num_rep_distances; ++i ) eb->reps[i] = 0;
   eb->state = 0;
   eb->member_finished = false;
   }

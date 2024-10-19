@@ -133,13 +133,15 @@ static inline bool Rd_unread_data( struct Range_decoder * const rdec,
   return true;
   }
 
-static bool Rd_try_reload( struct Range_decoder * const rdec )
+static int Rd_try_reload( struct Range_decoder * const rdec )
   {
   if( rdec->reload_pending && Rd_available_bytes( rdec ) >= 5 )
     {
     rdec->reload_pending = false;
     rdec->code = 0;
     rdec->range = 0xFFFFFFFFU;
+    /* check first byte of the LZMA stream without reading it */
+    if( rdec->cb.buffer[rdec->cb.get] != 0 ) return 2;
     Rd_get_byte( rdec );	/* discard first byte of the LZMA stream */
     int i; for( i = 0; i < 4; ++i )
       rdec->code = (rdec->code << 8) | Rd_get_byte( rdec );
@@ -164,7 +166,7 @@ static inline unsigned Rd_decode( struct Range_decoder * const rdec,
     rdec->range >>= 1;
 /*    symbol <<= 1; */
 /*    if( rdec->code >= rdec->range ) { rdec->code -= rdec->range; symbol |= 1; } */
-    const bool bit = ( rdec->code >= rdec->range );
+    const bool bit = rdec->code >= rdec->range;
     symbol <<= 1; symbol += bit;
     rdec->code -= rdec->range & ( 0U - bit );
     }
@@ -387,14 +389,14 @@ static inline void LZd_copy_block( struct LZ_decoder * const d,
   bool fast, fast2;
   if( lpos > distance )
     {
-    fast = ( len < d->cb.buffer_size - lpos );
-    fast2 = ( fast && len <= lpos - i );
+    fast = len < d->cb.buffer_size - lpos;
+    fast2 = fast && len <= lpos - i;
     }
   else
     {
     i += d->cb.buffer_size;
-    fast = ( len < d->cb.buffer_size - i );	/* (i == pos) may happen */
-    fast2 = ( fast && len <= i - lpos );
+    fast = len < d->cb.buffer_size - i;		/* (i == pos) may happen */
+    fast2 = fast && len <= i - lpos;
     }
   if( fast )					/* no wrap */
     {

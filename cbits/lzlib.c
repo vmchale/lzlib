@@ -486,7 +486,7 @@ int LZ_decompress_read( struct LZ_Decoder * const d,
       { d->rdec->member_position += Cb_used_bytes( &d->rdec->cb );
         Cb_reset( &d->rdec->cb );
         d->lz_errno = LZ_unexpected_eof; }
-    else if( result == 5 ) d->lz_errno = LZ_library_error;
+    else if( result == 6 ) d->lz_errno = LZ_library_error;
     else d->lz_errno = LZ_data_error;
     d->fatal = true;
     if( Cb_empty( &d->lz_decoder->cb ) ) return -1;
