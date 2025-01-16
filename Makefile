@@ -1,4 +1,4 @@
-.PHONY: clean setup
+.PHONY: clean setup regen
 
 MAKEFLAGS += --warn-undefined-variables --no-builtin-rules -j
 .DELETE_ON_ERROR:
@@ -16,3 +16,6 @@ gmp-6.1.2.tar.lz:
 
 lzlib-1.10.tar.lz:
 	curl -L http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -o $@
+
+regen:
+	fd '\.(c|h)$$' cbits -x cp lzlib-1.15/{/} cbits/
