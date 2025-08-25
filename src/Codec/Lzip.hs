@@ -107,7 +107,10 @@ decompress bs = runST $ do
     where
 
         -- TODO: not a fan of this loop!
-        step :: LZDecoderPtr -> [BS.ByteString] -> (ForeignPtr UInt8, CInt) -> LazyST.ST s (Maybe BS.ByteString, [BS.ByteString])
+        step :: LZDecoderPtr
+             -> [BS.ByteString]
+             -> (ForeignPtr UInt8, CInt)
+             -> LazyST.ST s (Maybe BS.ByteString, [BS.ByteString])
         step decoder bss (buf, bufSz) = LazyST.unsafeIOToST $ do
             maxSz <- fromIntegral <$> lZDecompressWriteSize decoder
             bss' <- case bss of
@@ -164,16 +167,16 @@ compressSz = compressWithSz Six
 --
 -- @since 1.0.2.0
 compressSzBest :: BSL.ByteString
-           -> Int -- ^ Size of input data, in bytes
-           -> BSL.ByteString
+               -> Int -- ^ Size of input data, in bytes
+               -> BSL.ByteString
 compressSzBest = compressWithSz maxBound
 
 -- | Alias for @'compressWithSz' 'minBound'@
 --
 -- @since 1.0.2.0
 compressSzFast :: BSL.ByteString
-           -> Int -- ^ Size of input data, in bytes
-           -> BSL.ByteString
+               -> Int -- ^ Size of input data, in bytes
+               -> BSL.ByteString
 compressSzFast = compressWithSz minBound
 
 -- | Alias for @'compressWith' 'maxBound'@
@@ -240,7 +243,10 @@ compressFineTune opts bstr sz = runST $ do
     BSL.fromChunks <$> loop (castForeignPtr enc) bss buf
 
     where
-        step :: LZEncoderPtr -> [BS.ByteString] -> ForeignPtr UInt8 -> LazyST.ST s (Bool, BS.ByteString, [BS.ByteString])
+        step :: LZEncoderPtr
+             -> [BS.ByteString]
+             -> ForeignPtr UInt8
+             -> LazyST.ST s (Bool, BS.ByteString, [BS.ByteString])
         step encoder bss buf = LazyST.unsafeIOToST $ do
             maxSz <- fromIntegral <$> lZCompressWriteSize encoder
             bss' <- case bss of
