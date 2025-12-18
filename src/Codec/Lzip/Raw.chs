@@ -72,7 +72,7 @@ data LZEncoder
 
 {# pointer *LZ_Encoder as LZEncoderPtr foreign finalizer LZ_compress_close as ^ -> LZEncoder #}
 
-{# fun LZ_compress_open as ^ { `CInt', `CInt', id `CULLong' } -> `Ptr LZEncoder' id #}
+{# fun LZ_compress_open as ^ { `CInt', `CInt', `CULLong' } -> `Ptr LZEncoder' id #}
 {# fun LZ_compress_finish as ^ { `LZEncoderPtr' } -> `CInt' #}
 {# fun LZ_compress_read as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
 {# fun LZ_compress_write as ^ { `LZEncoderPtr', `Ptr UInt8', `CInt' } -> `CInt' #}
