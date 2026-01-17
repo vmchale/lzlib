@@ -1,5 +1,5 @@
 /* Lzlib - Compression library for the lzip format
-   Copyright (C) 2009-2025 Antonio Diaz Diaz.
+   Copyright (C) 2009-2026 Antonio Diaz Diaz.
 
    This library is free software. Redistribution and use in source and
    binary forms, with or without modification, are permitted provided
@@ -100,21 +100,20 @@ static int LZd_decode_member( LZ_decoder * const d )
     else					/* match */
       {
       len = Rd_decode_len( rdec, &d->match_len_model, pos_state );
-      unsigned distance = Rd_decode_tree6( rdec, d->bm_dis_slot[get_len_state(len)] );
-      if( distance >= start_dis_model )
+      unsigned rep0 = Rd_decode_tree6( rdec, d->bm_dis_slot[get_len_state(len)] );
+      if( rep0 >= start_dis_model )
         {
-        const unsigned dis_slot = distance;
+        const unsigned dis_slot = rep0;
         const int direct_bits = ( dis_slot >> 1 ) - 1;
-        distance = ( 2 | ( dis_slot & 1 ) ) << direct_bits;
+        rep0 = ( 2 | ( dis_slot & 1 ) ) << direct_bits;
         if( dis_slot < end_dis_model )
-          distance += Rd_decode_tree_reversed( rdec,
-                      d->bm_dis + ( distance - dis_slot ), direct_bits );
+          rep0 += Rd_decode_tree_reversed( rdec, d->bm_dis + ( rep0 - dis_slot ),
+                                           direct_bits );
         else
           {
-          distance +=
-            Rd_decode( rdec, direct_bits - dis_align_bits ) << dis_align_bits;
-          distance += Rd_decode_tree_reversed4( rdec, d->bm_align );
-          if( distance == 0xFFFFFFFFU )		/* marker found */
+          rep0 += Rd_decode( rdec, direct_bits - dis_align_bits ) << dis_align_bits;
+          rep0 += Rd_decode_tree_reversed4( rdec, d->bm_align );
+          if( rep0 == 0xFFFFFFFFU )		/* marker found */
             {
             Rd_normalize( rdec );
             const unsigned mpos = rdec->member_position;
@@ -137,10 +136,10 @@ static int LZd_decode_member( LZ_decoder * const d )
             }
           }
         }
-      d->rep3 = d->rep2; d->rep2 = d->rep1; d->rep1 = d->rep0; d->rep0 = distance;
+      d->rep3 = d->rep2; d->rep2 = d->rep1; d->rep1 = d->rep0; d->rep0 = rep0;
+      if( rep0 >= d->dictionary_size ||
+          ( rep0 >= d->cb.put && !d->pos_wrapped ) ) return 1;
       *state = St_set_match( *state );
-      if( d->rep0 >= d->dictionary_size ||
-          ( d->rep0 >= d->cb.put && !d->pos_wrapped ) ) return 1;
       }
     LZd_copy_block( d, d->rep0, len );
     }
