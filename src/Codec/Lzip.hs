@@ -54,22 +54,9 @@ import           Foreign.Ptr                  (castPtr)
 import           System.IO                    (IOMode (ReadMode), hFileSize,
                                                withFile)
 
-data CompressionLevel = Zero
-    | One
-    | Two
-    | Three
-    | Four
-    | Five
-    | Six
-    | Seven
-    | Eight
-    | Nine
-    deriving (Enum, Bounded)
+data CompressionLevel = Zero | One | Two | Three | Four | Five | Six | Seven | Eight | Nine deriving (Enum, Bounded)
 
-data LzOptions = LzOptions
-    { dictionarySize :: !Int
-    , matchLenLimit  :: !Int
-    }
+data LzOptions = LzOptions { dictionarySize :: !Int, matchLenLimit  :: !Int }
 
 encoderOptions :: CompressionLevel -> LzOptions
 encoderOptions Zero  = LzOptions 65535 16
