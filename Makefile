@@ -1,21 +1,2 @@
-.PHONY: clean setup regen
-
-MAKEFLAGS += --warn-undefined-variables --no-builtin-rules -j
-.DELETE_ON_ERROR:
-
-setup: gmp-6.1.2.tar lzlib-1.10.tar
-
 clean:
-	rm -rf .stack-work dist-newstyle dist *.tar* *.hp *.prof stack.yaml.lock .hspec-failures tags *.svg
-
-%.tar: %.tar.lz
-	lzip --keep --decompress --force $@.lz
-
-gmp-6.1.2.tar.lz:
-	curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz -o $@
-
-lzlib-1.10.tar.lz:
-	curl -L http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.10.tar.lz -o $@
-
-regen:
-	fd '\.(c|h)$$' cbits -x cp lzlib-1.15/{/} cbits/
+	rm -rf dist-newstyle *.hp *.prof tags *.svg tags.mtime

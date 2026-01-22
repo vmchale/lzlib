@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+set -ex
+
+version="$(curl -s 'http://download.savannah.gnu.org/releases/lzip/lzlib/?C=M&O=D' | ja '[:|>.?{| `0 ~* 1 /lzlib-(\d+(\.\d+))*.tar.gz/}')"
+curl -L -O http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-${version}.tar.gz
+tar xvf lzlib-${version}.tar.gz
+fd '\.(c|h)$$' cbits -x cp lzlib-${version}/{/} cbits/
