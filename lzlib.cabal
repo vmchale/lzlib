@@ -73,7 +73,8 @@ test-suite lzlib-test
     main-is:          Z.hs
     hs-source-dirs:   test
     default-language: Haskell2010
-    ghc-options:      -threaded -rtsopts "-with-rtsopts=-N -K1K" -Wall
+    -- ghc-options:      -threaded -rtsopts "-with-rtsopts=-N -K1K" -Wall
+    ghc-options:      -threaded -rtsopts "-with-rtsopts=-K1K" -Wall
     build-depends:
         base,
         lzlib,
