@@ -65,7 +65,7 @@ static int LZd_decode_member( LZ_decoder * const d )
       if( ( *state = St_set_char( *state ) ) < 4 )
         LZd_put_byte( d, Rd_decode_tree8( rdec, bm ) );
       else
-        LZd_put_byte( d, Rd_decode_matched( rdec, bm, LZd_peek( d, d->rep0 ) ) );
+        LZd_put_byte( d, Rd_decode_matched( rdec, bm, LZd_peek( d, d->dis0 ) ) );
       continue;
       }
     /* match or repeated match */
@@ -76,23 +76,23 @@ static int LZd_decode_member( LZ_decoder * const d )
         {
         if( Rd_decode_bit( rdec, &d->bm_len[*state][pos_state] ) == 0 )	/* 4th bit */
           { *state = St_set_shortrep( *state );
-            LZd_put_byte( d, LZd_peek( d, d->rep0 ) ); continue; }
+            LZd_put_byte( d, LZd_peek( d, d->dis0 ) ); continue; }
         }
       else
         {
         unsigned distance;
         if( Rd_decode_bit( rdec, &d->bm_rep1[*state] ) == 0 )	/* 4th bit */
-          distance = d->rep1;
+          distance = d->dis1;
         else
           {
           if( Rd_decode_bit( rdec, &d->bm_rep2[*state] ) == 0 )	/* 5th bit */
-            distance = d->rep2;
+            distance = d->dis2;
           else
-            { distance = d->rep3; d->rep3 = d->rep2; }
-          d->rep2 = d->rep1;
+            { distance = d->dis3; d->dis3 = d->dis2; }
+          d->dis2 = d->dis1;
           }
-        d->rep1 = d->rep0;
-        d->rep0 = distance;
+        d->dis1 = d->dis0;
+        d->dis0 = distance;
         }
       *state = St_set_rep( *state );
       len = Rd_decode_len( rdec, &d->rep_len_model, pos_state );
@@ -100,20 +100,20 @@ static int LZd_decode_member( LZ_decoder * const d )
     else					/* match */
       {
       len = Rd_decode_len( rdec, &d->match_len_model, pos_state );
-      unsigned rep0 = Rd_decode_tree6( rdec, d->bm_dis_slot[get_len_state(len)] );
-      if( rep0 >= start_dis_model )
+      unsigned dis0 = Rd_decode_tree6( rdec, d->bm_dis_slot[get_len_state(len)] );
+      if( dis0 >= start_dis_model )
         {
-        const unsigned dis_slot = rep0;
+        const unsigned dis_slot = dis0;
         const int direct_bits = ( dis_slot >> 1 ) - 1;
-        rep0 = ( 2 | ( dis_slot & 1 ) ) << direct_bits;
+        dis0 = ( 2 | ( dis_slot & 1 ) ) << direct_bits;
         if( dis_slot < end_dis_model )
-          rep0 += Rd_decode_tree_reversed( rdec, d->bm_dis + ( rep0 - dis_slot ),
+          dis0 += Rd_decode_tree_reversed( rdec, d->bm_dis + ( dis0 - dis_slot ),
                                            direct_bits );
         else
           {
-          rep0 += Rd_decode( rdec, direct_bits - dis_align_bits ) << dis_align_bits;
-          rep0 += Rd_decode_tree_reversed4( rdec, d->bm_align );
-          if( rep0 == 0xFFFFFFFFU )		/* marker found */
+          dis0 += Rd_decode( rdec, direct_bits - dis_align_bits ) << dis_align_bits;
+          dis0 += Rd_decode_tree_reversed4( rdec, d->bm_align );
+          if( dis0 == 0xFFFFFFFFU )		/* marker found */
             {
             Rd_normalize( rdec );
             const unsigned mpos = rdec->member_position;
@@ -136,12 +136,12 @@ static int LZd_decode_member( LZ_decoder * const d )
             }
           }
         }
-      d->rep3 = d->rep2; d->rep2 = d->rep1; d->rep1 = d->rep0; d->rep0 = rep0;
-      if( rep0 >= d->dictionary_size ||
-          ( rep0 >= d->cb.put && !d->pos_wrapped ) ) return 1;
+      d->dis3 = d->dis2; d->dis2 = d->dis1; d->dis1 = d->dis0; d->dis0 = dis0;
+      if( dis0 >= d->dictionary_size ||
+          ( dis0 >= d->cb.put && !d->pos_wrapped ) ) return 1;
       *state = St_set_match( *state );
       }
-    LZd_copy_block( d, d->rep0, len );
+    LZd_copy_block( d, d->dis0, len );
     }
   return 2;
   }

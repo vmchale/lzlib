@@ -531,7 +531,7 @@ typedef struct LZ_encoder_base
   Len_model match_len_model;
   Len_model rep_len_model;
   Range_encoder renc;
-  int reps[num_rep_distances];
+  int reps[num_rep_distances];		/* latest four distances */
   State state;
   bool member_finished;
   } LZ_encoder_base;
